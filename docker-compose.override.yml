@@ -1,0 +1,10 @@
+services:
+  userservice:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__UserDbConnection=Host=userdb_postgres;Port=5432;Database=userdb;Username=admin;Password=root;
+
+  mappingservice:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__MappingDbConnection=Host=mappingdb_postgres;Port=5432;Database=mappingdb;Username=admin;Password=root;
