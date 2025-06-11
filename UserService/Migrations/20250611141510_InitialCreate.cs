@@ -3,27 +3,26 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace MappingService.Migrations
+namespace UserService.Migrations
 {
     /// <inheritdoc />
-    public partial class InitMigration : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Mappings",
+                name: "Users",
                 columns: table => new
                 {
                     Guid = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    Type = table.Column<string>(type: "text", nullable: false),
-                    RowVersion = table.Column<long>(type: "bigint", nullable: false),
-                    MappingJsonData = table.Column<string>(type: "jsonb", nullable: false)
+                    xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false),
+                    JsonData = table.Column<string>(type: "jsonb", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Mappings", x => x.Guid);
+                    table.PrimaryKey("PK_Users", x => x.Guid);
                 });
         }
 
@@ -31,7 +30,7 @@ namespace MappingService.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Mappings");
+                name: "Users");
         }
     }
 }

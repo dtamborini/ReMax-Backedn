@@ -264,3 +264,4 @@ C:\Users\david\Documents\REMAX\ReMaxApi\MappingService\obj\Debug\net8.0\refint\M
 C:\Users\david\Documents\REMAX\ReMaxApi\MappingService\obj\Debug\net8.0\MappingService.pdb
 C:\Users\david\Documents\REMAX\ReMaxApi\MappingService\obj\Debug\net8.0\MappingService.genruntimeconfig.cache
 C:\Users\david\Documents\REMAX\ReMaxApi\MappingService\obj\Debug\net8.0\ref\MappingService.dll
+C:\Users\david\Documents\REMAX\RemaxApi\MappingService\obj\Debug\net8.0\MappingService.sourcelink.json

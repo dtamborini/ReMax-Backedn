@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MappingService.Data;
 using MappingService.Models;
@@ -16,22 +16,38 @@ namespace MappingService.Controllers
             _context = context;
         }
 
-        // GET: api/Mappings
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EntityMapping>>> GetMappings()
         {
-            return await _context.Mappings.ToListAsync();
+            var mappings = await _context.Mappings.ToListAsync();
+            mappings.ForEach(m => m.DeserializeComplexData());
+            return mappings;
         }
 
-        // POST: api/Mappings
         [HttpPost]
-        public async Task<ActionResult<EntityMapping>> PostMappingEntry(EntityMapping mapping)
+        public async Task<ActionResult<EntityMapping>> PostMappingEntry([FromBody] EntityMapping mapping)
         {
+            mapping.SerializeComplexData();
+
             _context.Mappings.Add(mapping);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetMappings", new { guid = mapping.Guid }, mapping);
+            mapping.DeserializeComplexData();
+
+            return CreatedAtAction("GetMapping", new { guid = mapping.Guid }, mapping);
         }
 
+        [HttpGet("{guid}")]
+        public async Task<ActionResult<EntityMapping>> GetMapping(Guid guid)
+        {
+            var mapping = await _context.Mappings.FindAsync(guid);
+
+            if (mapping == null)
+            {
+                return NotFound();
+            }
+            mapping.DeserializeComplexData();
+            return mapping;
+        }
     }
 }

@@ -16,13 +16,21 @@ namespace UserService.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<User>(entity =>
             {
                 entity.HasKey(e => e.Guid);
-                entity.Property(e => e.RowVersion).IsRowVersion();
+
+                entity.Property(e => e.RowVersion)
+                      .IsRowVersion()
+                      .ValueGeneratedOnAddOrUpdate()
+                      .IsConcurrencyToken();
+
+                entity.Property(e => e.RowVersion)
+                      .Metadata.SetBeforeSaveBehavior(Microsoft.EntityFrameworkCore.Metadata.PropertySaveBehavior.Ignore);
             });
+
+            base.OnModelCreating(modelBuilder);
         }
     }
 }

@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using MappingService.Models;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
-using UserService.Models;
-using EntityState = UserService.Models.EntityState;
-using EntityType = UserService.Enums.EntityType;
+using System.Text.Json.Serialization;
+using EntityType = MappingService.Enums.EntityType;
 
 public abstract class EntityBaseMapping
 {
@@ -13,33 +13,29 @@ public abstract class EntityBaseMapping
     public EntityType Type { get; set; } = EntityType.None;
 
     [NotMapped]
-    public List<EntityState> States { get; set; } = new List<EntityState>();
-
-    [NotMapped]
     public List<EntityAttachment> Attachments { get; set; } = new List<EntityAttachment>();
 
     [NotMapped]
-    public List<EntityProperty> Properties { get; set; } = new List<EntityProperty>();
+    public List<EntityPropertyMapping> Properties { get; set; } = new List<EntityPropertyMapping>();
 
-    [ConcurrencyCheck]
     public uint RowVersion { get; set; }
 
+    [JsonIgnore]
     [Column(TypeName = "jsonb")]
     public string MappingJsonData { get; set; } = "{}";
 
-    protected void SerializeComplexData()
+    public void SerializeComplexData()
     {
         var complexData = new ComplexMappingDataDto
         {
             Type = Type,
-            States = States,
             Attachments = Attachments,
             Properties = Properties
         };
         MappingJsonData = JsonSerializer.Serialize(complexData);
     }
 
-    protected void DeserializeComplexData()
+    public void DeserializeComplexData()
     {
         if (!string.IsNullOrEmpty(MappingJsonData) && MappingJsonData != "{}")
         {
@@ -47,9 +43,8 @@ public abstract class EntityBaseMapping
             if (complexData != null)
             {
                 Type = complexData.Type;
-                States = complexData.States ?? new List<EntityState>();
                 Attachments = complexData.Attachments ?? new List<EntityAttachment>();
-                Properties = complexData.Properties ?? new List<EntityProperty>();
+                Properties = complexData.Properties ?? new List<EntityPropertyMapping>();
             }
         }
     }
@@ -57,8 +52,7 @@ public abstract class EntityBaseMapping
     protected class ComplexMappingDataDto
     {
         public EntityType Type { get; set; }
-        public List<EntityState>? States { get; set; }
         public List<EntityAttachment>? Attachments { get; set; }
-        public List<EntityProperty>? Properties { get; set; }
+        public List<EntityPropertyMapping>? Properties { get; set; }
     }
 }

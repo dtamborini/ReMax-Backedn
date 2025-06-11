@@ -135,3 +135,4 @@ C:\Users\david\Documents\REMAX\ReMaxApi\UserService\bin\Debug\net8.0\Microsoft.A
 C:\Users\david\Documents\REMAX\ReMaxApi\UserService\bin\Debug\net8.0\Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll
 C:\Users\david\Documents\REMAX\ReMaxApi\UserService\bin\Debug\net8.0\Newtonsoft.Json.dll
 C:\Users\david\Documents\REMAX\ReMaxApi\UserService\bin\Debug\net8.0\Newtonsoft.Json.Bson.dll
+C:\Users\david\Documents\REMAX\RemaxApi\UserService\obj\Debug\net8.0\UserService.sourcelink.json

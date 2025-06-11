@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using UserService.Clients;
 using UserService.Data;
 using UserService.Enums;
 using UserService.Models;
@@ -13,25 +14,22 @@ namespace UserService.Controllers
     public class UsersController : ControllerBase
     {
         private readonly UserDbContext _context;
+        private readonly IMappingServiceHttpClient _mappingServiceHttpClient;
 
-        public UsersController(UserDbContext context)
+        public UsersController(UserDbContext context, IMappingServiceHttpClient mappingServiceHttpClient)
         {
             _context = context;
+            _mappingServiceHttpClient = mappingServiceHttpClient;
         }
 
-        // GET: api/Users
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
             var users = await _context.Users.ToListAsync();
-            foreach (var user in users)
-            {
-                user.DeserializeComplexData();
-            }
+            users.ForEach(m => m.DeserializeComplexData());
             return users;
         }
 
-        // GET: api/Users/5
         [HttpGet("{guid}")]
         public async Task<ActionResult<User>> GetUser(Guid guid)
         {
@@ -45,14 +43,27 @@ namespace UserService.Controllers
             return user;
         }
 
-        // POST: api/Users
         [HttpPost]
-        public async Task<ActionResult<User>> PostUser(User user)
+        public async Task<ActionResult<User>> PostUser([FromBody] User user)
         {
+        
             if (user.Guid == Guid.Empty)
             {
                 user.Guid = Guid.NewGuid();
             }
+
+            if (user.Mapping == Guid.Empty)
+            {
+                return BadRequest("MappingGuid cannot be empty.");
+            }
+
+            Guid? retrievedMappingGuid = await _mappingServiceHttpClient.GetMappingGuidByIdAsync(user.Mapping);
+
+            if (retrievedMappingGuid == null)
+            {
+                return NotFound($"Mapping with ID {user.Mapping} not found or inaccessible.");
+            }
+            user.Mapping = retrievedMappingGuid.Value;
 
             if (user.UniqueIdentifiers == null)
             {
@@ -65,7 +76,6 @@ namespace UserService.Controllers
             });
 
             user.SerializeComplexData();
-
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
@@ -73,7 +83,6 @@ namespace UserService.Controllers
             return CreatedAtAction("GetUser", new { guid = user.Guid }, user);
         }
 
-        // PUT: api/Users/5
         [HttpPut("{guid}")]
         public async Task<IActionResult> PutUser(Guid guid, User user)
         {
@@ -105,7 +114,6 @@ namespace UserService.Controllers
             return NoContent();
         }
 
-        // DELETE: api/Users/5
         [HttpDelete("{guid}")]
         public async Task<IActionResult> DeleteUser(Guid guid)
         {
@@ -121,7 +129,6 @@ namespace UserService.Controllers
             return NoContent();
         }
 
-        // PATCH: api/Users/5
         [HttpPatch("{guid}")]
         public async Task<IActionResult> PatchUser(Guid guid, [FromBody] User user)
         {

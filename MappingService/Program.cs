@@ -1,6 +1,7 @@
 // MappingService/Program.cs
-using Microsoft.EntityFrameworkCore;
 using MappingService.Data; // Assicurati che il namespace sia corretto
+using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,11 @@ builder.Services.AddSwaggerGen();
 // Aggiungi la configurazione del DbContext per PostgreSQL
 builder.Services.AddDbContext<MappingDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("MappingDbConnection")));
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options => {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
 var app = builder.Build();
 

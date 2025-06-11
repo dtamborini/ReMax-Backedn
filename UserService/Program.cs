@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
+using UserService.Clients;
 using UserService.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,7 +9,15 @@ var connectionString = builder.Configuration.GetConnectionString("UserDbConnecti
 builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-builder.Services.AddControllers();
+builder.Services.AddHttpClient<IMappingServiceHttpClient, MappingServiceHttpClient>(client =>{
+    client.BaseAddress = new Uri(builder.Configuration["MappingService:BaseUrl"]!);
+});
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options => {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

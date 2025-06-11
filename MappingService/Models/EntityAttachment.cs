@@ -1,4 +1,4 @@
-﻿namespace UserService.Models
+﻿namespace MappingService.Models
 {
     public class EntityAttachment
     {

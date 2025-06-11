@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using UserService.Models;
 using EntityState = UserService.Models.EntityState;
 using EntityType = UserService.Enums.EntityType;
@@ -9,9 +10,6 @@ public abstract class EntityBaseDomain
 {
     public Guid Guid { get; set; } = Guid.NewGuid();
     public required string Name { get; set; }
-
-    [NotMapped]
-    public EntityType Type { get; set; } = EntityType.None;
 
     [NotMapped]
     public required Guid Mapping { get; set; }
@@ -30,16 +28,15 @@ public abstract class EntityBaseDomain
 
     [NotMapped]
     public List<EntityProperty> Properties { get; set; } = new List<EntityProperty>();
-
-    [ConcurrencyCheck]
     public uint RowVersion { get; set; }
 
+    [JsonIgnore]
     [Column(TypeName = "jsonb")]
     public string? JsonData { get; set; }
 
     public void SerializeComplexData()
     {
-        var complexData = new
+        var complexData = new ComplexEntityDataDto
         {
             Mapping = Mapping,
             UniqueIdentifiers = UniqueIdentifiers,

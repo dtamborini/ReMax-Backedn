@@ -14,13 +14,21 @@ namespace MappingService.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<EntityMapping>().HasKey(e => e.Guid);
 
-            modelBuilder.Entity<EntityMapping>()
-                .Property(e => e.Type)
-                .HasConversion<string>();
+            modelBuilder.Entity<EntityMapping>(entity =>
+            {
+                entity.Property(e => e.RowVersion)
+                      .IsRowVersion()
+                      .ValueGeneratedOnAddOrUpdate()
+                      .IsConcurrencyToken();
+
+                entity.Property(e => e.RowVersion)
+                      .Metadata.SetBeforeSaveBehavior(Microsoft.EntityFrameworkCore.Metadata.PropertySaveBehavior.Ignore);
+            });
+
+            base.OnModelCreating(modelBuilder);
         }
     }
 }

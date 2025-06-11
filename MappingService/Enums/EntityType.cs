@@ -1,4 +1,4 @@
-﻿namespace UserService.Enums
+﻿namespace MappingService.Enums
 {
     public enum EntityType
     {
@@ -13,5 +13,6 @@
         WorkSheet,
         WorkQuote,
         Rfq,
+        User,
     }
 }
