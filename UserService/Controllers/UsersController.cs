@@ -1,10 +1,14 @@
-﻿using Microsoft.AspNetCore.JsonPatch;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using UserService.Clients;
 using UserService.Data;
 using UserService.Enums;
 using UserService.Models;
+using UserService.Models.DTOs;
+using UserService.Services;
 using EntityState = Microsoft.EntityFrameworkCore.EntityState;
 
 namespace UserService.Controllers
@@ -15,11 +19,16 @@ namespace UserService.Controllers
     {
         private readonly UserDbContext _context;
         private readonly IMappingServiceHttpClient _mappingServiceHttpClient;
+        private readonly IPasswordHasher _passwordHasher;
 
-        public UsersController(UserDbContext context, IMappingServiceHttpClient mappingServiceHttpClient)
-        {
+        public UsersController(
+            UserDbContext context, 
+            IMappingServiceHttpClient mappingServiceHttpClient, 
+            IPasswordHasher passwordHasher
+        ){
             _context = context;
             _mappingServiceHttpClient = mappingServiceHttpClient;
+            _passwordHasher = passwordHasher;
         }
 
         [HttpGet]
@@ -44,13 +53,12 @@ namespace UserService.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<User>> PostUser([FromBody] User user)
+        public async Task<ActionResult<User>> PostUser([FromBody] RegisterUserModel model)
         {
-        
-            if (user.Guid == Guid.Empty)
-            {
-                user.Guid = Guid.NewGuid();
-            }
+
+            var user = model.User;
+            user.Username = model.Username;
+            user.Guid = Guid.NewGuid();
 
             if (user.Mapping == Guid.Empty)
             {
@@ -64,6 +72,15 @@ namespace UserService.Controllers
                 return NotFound($"Mapping with ID {user.Mapping} not found or inaccessible.");
             }
             user.Mapping = retrievedMappingGuid.Value;
+
+            if (!string.IsNullOrEmpty(model.Password))
+            {
+                user.HashPassword = _passwordHasher.HashPassword(model.Password);
+            }
+            else
+            {
+                return BadRequest("Password cannot be empty for new user.");
+            }
 
             if (user.UniqueIdentifiers == null)
             {
@@ -158,6 +175,12 @@ namespace UserService.Controllers
             {
                 userToUpdate.UniqueIdentifiers = user.UniqueIdentifiers;
                 updatedProperties.Add(nameof(userToUpdate.UniqueIdentifiers), userToUpdate.UniqueIdentifiers);
+            }
+
+            if (user.States != null)
+            {
+                userToUpdate.States = user.States;
+                updatedProperties.Add(nameof(userToUpdate.States), userToUpdate.States);
             }
 
             userToUpdate.SerializeComplexData();

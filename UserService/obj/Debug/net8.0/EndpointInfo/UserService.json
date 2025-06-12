@@ -5,6 +5,49 @@
     "version": "1.0"
   },
   "paths": {
+    "/api/Auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Auth/logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Users": {
       "get": {
         "tags": [
@@ -50,17 +93,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/User"
+                "$ref": "#/components/schemas/RegisterUserModel"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/User"
+                "$ref": "#/components/schemas/RegisterUserModel"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/User"
+                "$ref": "#/components/schemas/RegisterUserModel"
               }
             }
           }
@@ -352,23 +395,6 @@
         },
         "additionalProperties": false
       },
-      "EntityType": {
-        "enum": [
-          0,
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10
-        ],
-        "type": "integer",
-        "format": "int32"
-      },
       "EntityUniqueIdentifier": {
         "required": [
           "type",
@@ -404,13 +430,55 @@
         },
         "additionalProperties": false
       },
+      "LoginModel": {
+        "required": [
+          "password",
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "password": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RegisterUserModel": {
+        "required": [
+          "password",
+          "user",
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "maxLength": 50,
+            "minLength": 3,
+            "type": "string"
+          },
+          "password": {
+            "maxLength": 100,
+            "minLength": 6,
+            "type": "string",
+            "format": "password"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          }
+        },
+        "additionalProperties": false
+      },
       "UniqueIdentifierType": {
         "enum": [
-          0,
-          1
+          "QR",
+          "NFC"
         ],
-        "type": "integer",
-        "format": "int32"
+        "type": "string"
       },
       "User": {
         "required": [
@@ -426,9 +494,6 @@
           "name": {
             "type": "string",
             "nullable": true
-          },
-          "type": {
-            "$ref": "#/components/schemas/EntityType"
           },
           "mapping": {
             "type": "string",
@@ -472,10 +537,6 @@
           "rowVersion": {
             "type": "integer",
             "format": "int32"
-          },
-          "jsonData": {
-            "type": "string",
-            "nullable": true
           }
         },
         "additionalProperties": false

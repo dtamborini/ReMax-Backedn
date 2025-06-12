@@ -2,11 +2,13 @@
 using Microsoft.EntityFrameworkCore;
 using MappingService.Data;
 using MappingService.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MappingService.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class MappingsController : ControllerBase
     {
         private readonly MappingDbContext _context;
@@ -48,6 +50,21 @@ namespace MappingService.Controllers
             }
             mapping.DeserializeComplexData();
             return mapping;
+        }
+
+        [HttpDelete("{guid}")]
+        public async Task<IActionResult> DeleteMapping(Guid guid)
+        {
+            var user = await _context.Mappings.FindAsync(guid);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            _context.Mappings.Remove(user);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
     }
 }

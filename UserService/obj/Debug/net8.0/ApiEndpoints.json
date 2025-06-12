@@ -1,5 +1,31 @@
 [
   {
+    "ContainingType": "UserService.Controllers.AuthController",
+    "Method": "Login",
+    "RelativePath": "api/Auth/login",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "model",
+        "Type": "UserService.Models.Auth.LoginModel",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "UserService.Controllers.AuthController",
+    "Method": "Logout",
+    "RelativePath": "api/Auth/logout",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "UserService.Controllers.UsersController",
     "Method": "GetUsers",
     "RelativePath": "api/Users",
@@ -28,8 +54,8 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "user",
-        "Type": "UserService.Models.User",
+        "Name": "model",
+        "Type": "UserService.Models.DTOs.RegisterUserModel",
         "IsRequired": true
       }
     ],

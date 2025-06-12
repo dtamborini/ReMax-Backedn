@@ -265,3 +265,11 @@ C:\Users\david\Documents\REMAX\ReMaxApi\MappingService\obj\Debug\net8.0\MappingS
 C:\Users\david\Documents\REMAX\ReMaxApi\MappingService\obj\Debug\net8.0\MappingService.genruntimeconfig.cache
 C:\Users\david\Documents\REMAX\ReMaxApi\MappingService\obj\Debug\net8.0\ref\MappingService.dll
 C:\Users\david\Documents\REMAX\RemaxApi\MappingService\obj\Debug\net8.0\MappingService.sourcelink.json
+C:\Users\david\Documents\REMAX\RemaxApi\MappingService\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\david\Documents\REMAX\RemaxApi\MappingService\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\david\Documents\REMAX\RemaxApi\MappingService\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\david\Documents\REMAX\RemaxApi\MappingService\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
+C:\Users\david\Documents\REMAX\RemaxApi\MappingService\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
+C:\Users\david\Documents\REMAX\RemaxApi\MappingService\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\Users\david\Documents\REMAX\RemaxApi\MappingService\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
+C:\Users\david\Documents\REMAX\RemaxApi\MappingService\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
