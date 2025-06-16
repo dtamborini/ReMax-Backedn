@@ -1,7 +1,5 @@
-﻿// In UserService/Data/UserDbContext.cs
-
-using Microsoft.EntityFrameworkCore;
-using UserService.Models; // Assicurati che il namespace sia corretto
+﻿using Microsoft.EntityFrameworkCore;
+using UserService.Models;
 
 namespace UserService.Data
 {
@@ -20,6 +18,7 @@ namespace UserService.Data
             modelBuilder.Entity<User>(entity =>
             {
                 entity.HasKey(e => e.Guid);
+                entity.HasIndex(e => e.Username).IsUnique();
 
                 entity.Property(e => e.RowVersion)
                       .IsRowVersion()
