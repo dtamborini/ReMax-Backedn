@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MappingService")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+34063136dca407f0d8286a9525be74a3b6b17e4f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f8fb58ab3a8ba89f9b748c6e31fb1a07404ef783")]
 [assembly: System.Reflection.AssemblyProductAttribute("MappingService")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MappingService")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

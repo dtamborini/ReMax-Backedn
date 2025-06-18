@@ -27,13 +27,11 @@ namespace UserService.Clients
                 }
                 catch (JsonException ex)
                 {
-                    // Gestisci l'errore di deserializzazione
                     Console.WriteLine($"Error deserializing mapping response: {ex.Message}");
                     return null;
                 }
                 catch (FormatException ex)
                 {
-                    // Gestisci l'errore di parsing del GUID
                     Console.WriteLine($"Error parsing GUID from mapping response: {ex.Message}");
                     return null;
                 }
@@ -45,7 +43,6 @@ namespace UserService.Clients
             }
             else
             {
-                // Logga l'errore o lancia un'eccezione
                 Console.WriteLine($"Error calling MappingService: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
                 return null;
             }

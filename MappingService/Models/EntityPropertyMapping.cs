@@ -45,7 +45,18 @@ namespace MappingService.Models
                 hash.Add(item);
             }
 
-            string? attributesJson = Attributes != null ? JsonSerializer.Serialize(Attributes) : null;
+            string? attributesJson = null;
+            if (Attributes is JsonElement jsonElement)
+            {
+                if (jsonElement.ValueKind != JsonValueKind.Null)
+                {
+                    attributesJson = JsonSerializer.Serialize(jsonElement);
+                }
+            }
+            else if (Attributes != null)
+            {
+                attributesJson = JsonSerializer.Serialize(Attributes);
+            }
             hash.Add(attributesJson);
 
             hash.Add(Value);

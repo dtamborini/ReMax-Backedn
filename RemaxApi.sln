@@ -9,6 +9,8 @@ Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MappingService", "MappingService\MappingService.csproj", "{35217ABD-FBE8-6213-BD89-88ACEF7FD10E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildingService", "BuildingService\BuildingService.csproj", "{093CAF8A-25A8-E483-2582-72F4F308B900}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{35217ABD-FBE8-6213-BD89-88ACEF7FD10E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{35217ABD-FBE8-6213-BD89-88ACEF7FD10E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{35217ABD-FBE8-6213-BD89-88ACEF7FD10E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{093CAF8A-25A8-E483-2582-72F4F308B900}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{093CAF8A-25A8-E483-2582-72F4F308B900}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{093CAF8A-25A8-E483-2582-72F4F308B900}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{093CAF8A-25A8-E483-2582-72F4F308B900}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

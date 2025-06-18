@@ -70,6 +70,41 @@ services:
         condition: service_healthy
     restart: on-failure
 
+  buildingservice:
+    image: ${DOCKER_REGISTRY-}buildingservice
+    build:
+      context: .
+      dockerfile: BuildingService/Dockerfile
+    ports:
+      - "8083:8080"
+    environment:
+      JwtSettings__Secret: super_secret_key_that_is_at_least_32_chars_long_and_very_secure_12345!
+    networks:
+      - mymicroservices_network
+    depends_on:
+      buildingdb_postgres:
+        condition: service_healthy
+    restart: on-failure
+
+  buildingdb_postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: buildingdb
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: root
+    volumes:
+      - buildingdb_data:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
+    networks:
+      - mymicroservices_network
+    restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d buildingdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 networks:
   mymicroservices_network:
     driver: bridge
@@ -77,3 +112,4 @@ networks:
 volumes:
   userdb_data:
   mapping_db_data:
+  buildingdb_data:

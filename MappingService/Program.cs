@@ -50,6 +50,9 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+var expectedIssuer = builder.Configuration["JwtSettings:InternalIssuer"] ?? "BuildingServiceInternalIssuer";
+var expectedAudience = builder.Configuration["MappingService:Audience"] ?? "MappingServiceApi";
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -74,7 +77,6 @@ builder.Services.AddControllers()
     .AddJsonOptions(options => {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
-
 
 builder.Services.AddAuthorization();
 var app = builder.Build();

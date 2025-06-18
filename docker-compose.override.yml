@@ -8,3 +8,8 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__MappingDbConnection=Host=mappingdb_postgres;Port=5432;Database=mappingdb;Username=admin;Password=root;
+ 
+  buildingservice:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__BuildingDbConnection=Host=buildingdb_postgres;Port=5432;Database=buildingdb;Username=admin;Password=root;

@@ -1,15 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using UserService.Clients;
 using UserService.Data;
 using UserService.Enums;
 using UserService.Models;
 using UserService.Models.DTOs;
 using UserService.Services;
-using EntityState = Microsoft.EntityFrameworkCore.EntityState;
 
 namespace UserService.Controllers
 {
@@ -109,7 +105,6 @@ namespace UserService.Controllers
             }
 
             user.SerializeComplexData();
-            _context.Entry(user).State = EntityState.Modified;
 
             try
             {

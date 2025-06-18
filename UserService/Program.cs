@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using UserService.Clients;
 using UserService.Data;
+using UserService.Handlers;
 using UserService.Services;
 
 
@@ -17,6 +18,15 @@ if (string.IsNullOrEmpty(jwtSecret))
 {
     throw new InvalidOperationException("JWT Secret not found in configuration.");
 }
+
+var internalIssuer = builder.Configuration["JwtSettings:InternalIssuer"] ?? "BuildingServiceInternalIssuer";
+var mappingServiceAudience = builder.Configuration["MappingService:Audience"] ?? "MappingServiceApi";
+
+builder.Services.AddTransient(sp => new CustomTokenHandler(
+    jwtSecret,
+    internalIssuer,
+    mappingServiceAudience
+));
 
 var connectionString = builder.Configuration.GetConnectionString("UserDbConnection");
 builder.Services.AddDbContext<UserDbContext>(options =>
