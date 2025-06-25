@@ -71,7 +71,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddDbContext<MappingDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("MappingDbConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddControllers()
     .AddJsonOptions(options => {

@@ -28,7 +28,7 @@ builder.Services.AddTransient(sp => new CustomTokenHandler(
     mappingServiceAudience
 ));
 
-var connectionString = builder.Configuration.GetConnectionString("UserDbConnection");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseNpgsql(connectionString));
 

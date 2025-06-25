@@ -83,7 +83,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddDbContext<BuildingDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("BuildingDbConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddControllers()
     .AddJsonOptions(options => {
