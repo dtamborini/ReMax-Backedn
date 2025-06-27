@@ -1,66 +1,66 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerUI;
+using System.Security.AccessControl;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
 using UserService.Clients;
-using UserService.Data;
 using UserService.Handlers;
+using UserService.Models.DTOs;
 using UserService.Services;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
-var jwtSecret = builder.Configuration["JwtSettings:Secret"];
-if (string.IsNullOrEmpty(jwtSecret))
+var useMockOAuth = builder.Configuration.GetValue<bool>("Authentication:UseMockOAuth");
+Console.WriteLine($"Using Mock OAuth: {useMockOAuth}");
+
+var jwtValidationSecretKey = builder.Configuration["JwtSettings:SecretKey"];
+var signingKeyId = builder.Configuration["JwtSettings:SigningKeyId"];
+
+if (string.IsNullOrEmpty(jwtValidationSecretKey) || string.IsNullOrEmpty(signingKeyId))
 {
     throw new InvalidOperationException("JWT Secret not found in configuration.");
 }
 
-var internalIssuer = builder.Configuration["JwtSettings:InternalIssuer"] ?? "BuildingServiceInternalIssuer";
-var mappingServiceAudience = builder.Configuration["MappingService:Audience"] ?? "MappingServiceApi";
 
-builder.Services.AddTransient(sp => new CustomTokenHandler(
-    jwtSecret,
-    internalIssuer,
-    mappingServiceAudience
-));
-
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<UserDbContext>(options =>
-    options.UseNpgsql(connectionString));
-
-builder.Services.AddHttpClient<IMappingServiceHttpClient, MappingServiceHttpClient>(client =>{
+builder.Services.AddHttpClient<IMappingServiceHttpClient, MappingServiceHttpClient>(client =>
+{
     client.BaseAddress = new Uri(builder.Configuration["MappingService:BaseUrl"]!);
 });
+
+
+builder.Services.AddHttpClient<IUserDataProviderClient, UserDataProviderClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["UserDataProviderService:BaseUrl"]!);
+});
+
+
+builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
+{
+    string? baseUrl;
+    if (useMockOAuth)
+    {
+        baseUrl = builder.Configuration["MockOAuthSettings:BaseUrl"];
+    }
+    else
+    {
+        baseUrl = builder.Configuration["OAuthSettings:BaseUrl"];
+    }
+
+    if (!string.IsNullOrEmpty(baseUrl))
+    {
+        client.BaseAddress = new Uri(baseUrl);
+    }
+});
+
 
 builder.Services.AddControllers()
     .AddJsonOptions(options => {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
-
-
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = false,
-        ValidateAudience = false,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
-    };
-});
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -69,17 +69,51 @@ builder.Services.AddSwaggerGen(options =>
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "User Service API",
-        Version = "v1"
+        Version = "v1",
+        Description = "API del servizio utenti con autenticazione OAuth 2.0."
     });
 
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    var useMockOAuth = builder.Configuration.GetValue<bool>("Authentication:UseMockOAuth");
+
+
+    string? authorizationUrl;
+    string? tokenUrl;
+    string? swaggerClientId;
+    string[]? swaggerScopes;
+
+    if (useMockOAuth)
     {
-        Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "Inserisci il token JWT nel campo del valore. Esempio: 'Bearer {token}'",
+        swaggerClientId = builder.Configuration["MockOAuthSettings:SwaggerClientId"];
+        swaggerScopes = builder.Configuration.GetSection("MockOAuthSettings:SwaggerScopes").Get<string[]>();
+        authorizationUrl = "http://localhost:7005/oauth/authorize";
+        tokenUrl = "http://localhost:7005/oauth/token";
+    }
+    else
+    {
+        swaggerClientId = builder.Configuration["OAuthSettings:SwaggerClientId"];
+        swaggerScopes = builder.Configuration.GetSection("OAuthSettings:SwaggerScopes").Get<string[]>();
+        authorizationUrl = builder.Configuration["OAuthSettings:AuthorizationUrl"];
+        tokenUrl = builder.Configuration["OAuthSettings:TokenEndpoint"];
+    }
+
+    if (string.IsNullOrEmpty(authorizationUrl) || string.IsNullOrEmpty(tokenUrl))
+    {
+        throw new InvalidOperationException("OAuth AuthorizationUrl or TokenEndpoint not configured for Swagger.");
+    }
+
+    options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.OAuth2,
+        Flows = new OpenApiOAuthFlows
+        {
+            AuthorizationCode = new OpenApiOAuthFlow
+            {
+                AuthorizationUrl = new Uri(authorizationUrl, UriKind.Absolute),
+                TokenUrl = new Uri(tokenUrl, UriKind.Absolute),
+                Scopes = swaggerScopes?.ToDictionary(s => s, s => $"Access to {s}") ?? new Dictionary<string, string>()
+            }
+        },
+        Description = "Autenticazione OAuth 2.0 tramite il tuo Identity Provider esterno."
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -90,38 +124,122 @@ builder.Services.AddSwaggerGen(options =>
                 Reference = new OpenApiReference
                 {
                     Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
+                    Id = "oauth2"
                 }
             },
-            new string[] {}
+            swaggerScopes ?? new string[] {}
         }
     });
 });
 
-builder.Services.AddAuthorization();
+// --- Configurazione Servizi di Autenticazione ---
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+{
+    options.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = context =>
+        {
+            Console.WriteLine($"Token Validated for user: {context.Principal?.Identity?.Name}");
+            foreach (var claim in context.Principal?.Claims ?? Enumerable.Empty<Claim>())
+            {
+                Console.WriteLine($"  Claim: {claim.Type} = {claim.Value}");
+            }
+            return Task.CompletedTask;
+        },
+        OnAuthenticationFailed = context =>
+        {
+            Console.WriteLine($"Authentication failed: {context.Exception.Message}");
+            return Task.FromException(context.Exception);
+        },
+        OnChallenge = context =>
+        {
+            Console.WriteLine($"OnChallenge called. Reason: {context.AuthenticateFailure?.Message ?? "None"}");
+            return Task.CompletedTask;
+        },
+        OnForbidden = context =>
+        {
+            Console.WriteLine($"OnForbidden called. User: {context.Principal?.Identity?.Name}");
+            return Task.CompletedTask;
+        }
+    };
+
+    if (useMockOAuth)
+    {
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = "http://localhost:7005",
+            ValidateAudience = true,
+            ValidAudience = "api1",
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero,
+
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtValidationSecretKey))
+            {
+                KeyId = signingKeyId
+            }
+        };
+    }
+    else
+    {
+        options.Authority = builder.Configuration["OAuthSettings:Authority"];
+        options.Audience = builder.Configuration["OAuthSettings:Audience"];
+        options.RequireHttpsMetadata = builder.Environment.IsProduction();
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true
+        };
+    }
+});
+
+// --- Configurazione Servizi di Autorizzazione ---
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
 
 var app = builder.Build();
-
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    try
-    {
-        var dbContext = services.GetRequiredService<UserService.Data.UserDbContext>();
-        dbContext.Database.Migrate();
-        Console.WriteLine("Database migration applied successfully.");
-    }
-    catch (Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while migrating the database.");
-    }
-}
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options => 
+    {
+        var useMockOAuth = builder.Configuration.GetValue<bool>("Authentication:UseMockOAuth");
+
+        string? swaggerClientId;
+        string[]? swaggerScopes;
+
+        if (useMockOAuth)
+        {
+            swaggerClientId = builder.Configuration["MockOAuthSettings:SwaggerClientId"];
+            swaggerScopes = builder.Configuration.GetSection("MockOAuthSettings:SwaggerScopes").Get<string[]>();
+        }
+        else
+        {
+            swaggerClientId = builder.Configuration["OAuthSettings:SwaggerClientId"];
+            swaggerScopes = builder.Configuration.GetSection("OAuthSettings:SwaggerScopes").Get<string[]>();
+        }
+
+        options.OAuthClientId(swaggerClientId);
+        options.OAuthScopes(swaggerScopes ?? new string[] { });
+        options.OAuthUsePkce();
+        options.OAuthAppName("User Service Swagger UI");
+        options.OAuthUseBasicAuthenticationWithAccessCodeGrant();
+    });
 }
 
 app.UseHttpsRedirection();

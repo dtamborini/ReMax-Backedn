@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using UserService.Clients;
-using UserService.Data;
-using UserService.Enums;
-using UserService.Models;
+﻿using UserService.Clients;
 using UserService.Models.DTOs;
-using UserService.Services;
+using UserService.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using UserService.Enums;
 
 namespace UserService.Controllers
 {
@@ -13,69 +11,64 @@ namespace UserService.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly UserDbContext _context;
         private readonly IMappingServiceHttpClient _mappingServiceHttpClient;
-        private readonly IPasswordHasher _passwordHasher;
+        private readonly IUserDataProviderClient _userDataProviderClient;
 
         public UsersController(
-            UserDbContext context, 
-            IMappingServiceHttpClient mappingServiceHttpClient, 
-            IPasswordHasher passwordHasher
-        ){
-            _context = context;
+            IMappingServiceHttpClient mappingServiceHttpClient,
+            IUserDataProviderClient userDataProviderClient
+        )
+        {
             _mappingServiceHttpClient = mappingServiceHttpClient;
-            _passwordHasher = passwordHasher;
+            _userDataProviderClient = userDataProviderClient;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()
         {
-            var users = await _context.Users.ToListAsync();
-            users.ForEach(m => m.DeserializeComplexData());
-            return users;
+            var users = await _userDataProviderClient.GetUsersAsync();
+            if (users == null)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    "Impossibile recuperare i dati degli utenti dal servizio dati esterno.");
+            }
+
+            return Ok(users);
         }
 
         [HttpGet("{guid}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<User>> GetUser(Guid guid)
         {
-            var user = await _context.Users.FindAsync(guid);
+            var user = await _userDataProviderClient.GetUserByIdAsync(guid);
 
             if (user == null)
             {
-                return NotFound();
+                return NotFound($"User con GUID '{guid}' non trovato nel servizio dati esterno.");
             }
-            user.DeserializeComplexData();
-            return user;
+
+            return Ok(user);
         }
 
         [HttpPost]
-        public async Task<ActionResult<User>> PostUser([FromBody] RegisterUserModel model)
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<User>> PostUser([FromBody] User user)
         {
 
-            var user = model.User;
-            user.Username = model.Username;
-            user.Guid = Guid.NewGuid();
-
-            if (user.Mapping == Guid.Empty)
+            if (!ModelState.IsValid)
             {
-                return BadRequest("MappingGuid cannot be empty.");
+                return BadRequest(ModelState);
             }
 
             Guid? retrievedMappingGuid = await _mappingServiceHttpClient.GetMappingGuidByIdAsync(user.Mapping);
-
             if (retrievedMappingGuid == null)
             {
                 return NotFound($"Mapping with ID {user.Mapping} not found or inaccessible.");
-            }
-            user.Mapping = retrievedMappingGuid.Value;
-
-            if (!string.IsNullOrEmpty(model.Password))
-            {
-                user.HashPassword = _passwordHasher.HashPassword(model.Password);
-            }
-            else
-            {
-                return BadRequest("Password cannot be empty for new user.");
             }
 
             if (user.UniqueIdentifiers == null)
@@ -83,60 +76,73 @@ namespace UserService.Controllers
                 user.UniqueIdentifiers = new List<EntityUniqueIdentifier>();
             }
 
-            user.UniqueIdentifiers.Add(new EntityUniqueIdentifier{
+            user.UniqueIdentifiers.Add(new EntityUniqueIdentifier
+            {
                 Type = UniqueIdentifierType.QR,
                 Value = user.Guid.ToString()
             });
 
             user.SerializeComplexData();
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+
+            var buildingDtoToSend = new UserDto
+            {
+                Guid = user.Guid,
+                Name = user.Name,
+                Mapping = (Guid)retrievedMappingGuid,
+            };
+
+            var createdBuildingDto = await _userDataProviderClient.CreateUserAsync(buildingDtoToSend);
+
+            if (createdBuildingDto == null)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                                  "Errore durante la creazione del Building nel servizio dati esterno.");
+            }
+
 
             user.DeserializeComplexData();
-            return CreatedAtAction("GetUser", new { guid = user.Guid }, user);
+
+            return CreatedAtAction(nameof(GetUser), new { guid = user.Guid }, user);
         }
 
         [HttpPut("{guid}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> PutUser(Guid guid, User user)
         {
             if (guid != user.Guid)
             {
-                return BadRequest();
+                return BadRequest("Il GUID nella rotta non corrisponde al GUID dell'utente fornito.");
             }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
 
             user.SerializeComplexData();
 
-            try
+            var buildingDtoToSend = new UserDto
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
+                Guid = user.Guid,
+                Name = user.Name,
+                Mapping = user.Mapping,
+            };
+
+            var success = await _userDataProviderClient.UpdateUserAsync(guid, buildingDtoToSend);
+
+            if (!success)
             {
-                if (!UserExists(guid))
+                var existingBuilding = await _userDataProviderClient.GetUserByIdAsync(guid);
+                if (existingBuilding == null)
                 {
-                    return NotFound();
+                    return NotFound($"User con GUID '{guid}' non trovato nel servizio dati esterno.");
                 }
-                else
-                {
-                    throw;
-                }
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                                  "Errore durante l'aggiornamento dell'utente nel servizio dati esterno.");
             }
-
-            user.DeserializeComplexData();
-            return NoContent();
-        }
-
-        [HttpDelete("{guid}")]
-        public async Task<IActionResult> DeleteUser(Guid guid)
-        {
-            var user = await _context.Users.FindAsync(guid);
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
 
             return NoContent();
         }
@@ -149,7 +155,7 @@ namespace UserService.Controllers
                 return BadRequest("La richiesta PATCH non contiene dati.");
             }
 
-            var userToUpdate = await _context.Users.FindAsync(guid);
+            var userToUpdate = await _userDataProviderClient.GetUserByIdAsync(guid);
 
             if (userToUpdate == null)
             {
@@ -181,18 +187,11 @@ namespace UserService.Controllers
             userToUpdate.SerializeComplexData();
             try
             {
-                await _context.SaveChangesAsync();
+                await _userDataProviderClient.UpdateUserAsync(userToUpdate.Guid, userToUpdate);
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!UserExists(guid))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                throw;
             }
             catch (Exception ex)
             {
@@ -202,11 +201,6 @@ namespace UserService.Controllers
 
             userToUpdate.DeserializeComplexData();
             return Ok(userToUpdate);
-        }
-
-        private bool UserExists(Guid guid)
-        {
-            return _context.Users.Any(e => e.Guid == guid);
         }
     }
 }

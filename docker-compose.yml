@@ -12,8 +12,8 @@ services:
     networks:
       - mymicroservices_network
     depends_on:
-      db_postgres:
-        condition: service_healthy
+      oauthmockserver:
+        condition: service_started
     restart: on-failure
 
   mappingservice:
@@ -43,6 +43,22 @@ services:
       JwtSettings__Secret: super_secret_key_that_is_at_least_32_chars_long_and_very_secure_12345!
     networks:
       - mymicroservices_network
+    restart: on-failure
+    depends_on:
+      oauthmockserver:
+        condition: service_started
+
+  worksheetservice:
+    image: ${DOCKER_REGISTRY-}worksheetservice
+    build:
+      context: .
+      dockerfile: WorkSheetService/Dockerfile
+    ports:
+      - "8084:8080"
+    environment:
+      JwtSettings__Secret: super_secret_key_that_is_at_least_32_chars_long_and_very_secure_12345!
+    networks:
+      - mymicroservices_network
     depends_on:
       db_postgres:
         condition: service_healthy
@@ -62,8 +78,27 @@ services:
       - mymicroservices_network
     restart: on-failure
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin -d buildingdb"]
+      test: ["CMD-SHELL", "pg_isready -U admin -d main_database"]
       interval: 5s
+      timeout: 5s
+      retries: 5
+
+  oauthmockserver:
+    image: ${DOCKER_REGISTRY-}oauth2mockserver
+    build:
+      context: .
+      dockerfile: OAuth2MockServer/Dockerfile
+    ports:
+      - "7005:8080"
+    environment:
+      ASPNETCORE_URLS: "http://+:8080"
+      ASPNETCORE_ENVIRONMENT: "Development"
+    networks:
+      - mymicroservices_network
+    restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/swagger/index.html || exit 1"]
+      interval: 10s
       timeout: 5s
       retries: 5
 

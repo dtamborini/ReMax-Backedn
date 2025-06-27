@@ -11,7 +11,7 @@ namespace BuildingService.Models
 
         [NotMapped]
         public dynamic? Attributes { get; set; }
-        public Dictionary<string, EntityParticipation> Dates { get; set; } = new Dictionary<string, EntityParticipation>();
+        public List<EntityDate>? Dates { get; set; }
         public string? Value { get; set; }
         public List<EntityProperty> Properties { get; set; } = new List<EntityProperty>();
     }

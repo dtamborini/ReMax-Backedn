@@ -4,10 +4,14 @@ namespace UserService.Models.Auth
 {
     public class LoginModel
     {
-        [Required]
-        public string Username { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Lo username è obbligatorio.")]
+        public string Username { get; set; } = "testuser";
 
-        [Required]
-        public string Password { get; set; } = string.Empty;
+        [Required(ErrorMessage = "La password è obbligatoria.")]
+        public string Password { get; set; } = "testpassword";
+
+        [Required(ErrorMessage = "Il Client ID è obbligatorio.")]
+        public string ClientId { get; set; } = "my-client";
+        public string? ClientSecret { get; set; } = "my-client-secret";
     }
 }

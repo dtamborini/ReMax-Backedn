@@ -1,5 +1,4 @@
 ﻿using BuildingService.Clients;
-using BuildingService.Data;
 using BuildingService.Enums;
 using BuildingService.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -13,41 +12,47 @@ namespace BuildingService.Controllers
     [Authorize]
     public class BuildingsController : ControllerBase
     {
-        private readonly BuildingDbContext _context;
         private readonly IMappingServiceHttpClient _mappingServiceHttpClient;
+        private readonly IBuildingDataProviderClient _buildingDataProviderClient;
 
         public BuildingsController(
-            BuildingDbContext context,
-            IMappingServiceHttpClient mappingServiceHttpClient
+            IMappingServiceHttpClient mappingServiceHttpClient,
+            IBuildingDataProviderClient buildingDataProviderClient
             )
         {
-            _context = context;
             _mappingServiceHttpClient = mappingServiceHttpClient;
+            _buildingDataProviderClient = buildingDataProviderClient;
         }
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<Building>>> GetBuildings()
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<IEnumerable<BuildingDto>>> GetBuildings()
         {
-            var buildings = await _context.Buildings.ToListAsync();
+            var buildings = await _buildingDataProviderClient.GetBuildingsAsync();
 
-            buildings.ForEach(b => b.DeserializeComplexData());
+            if (buildings == null)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    "Impossibile recuperare i dati dei Building dal servizio dati esterno.");
+            }
+
             return Ok(buildings);
         }
 
         [HttpGet("{guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Building>> GetBuilding(Guid guid)
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<BuildingDto>> GetBuilding(Guid guid)
         {
-            var building = await _context.Buildings.FindAsync(guid);
+            var building = await _buildingDataProviderClient.GetBuildingByIdAsync(guid);
 
             if (building == null)
             {
-                return NotFound($"Building con GUID '{guid}' non trovato.");
+                return NotFound($"Building con GUID '{guid}' non trovato nel servizio dati esterno.");
             }
 
-            building.DeserializeComplexData();
             return Ok(building);
         }
 
@@ -80,8 +85,21 @@ namespace BuildingService.Controllers
 
             building.SerializeComplexData();
 
-            _context.Buildings.Add(building);
-            await _context.SaveChangesAsync();
+            var buildingDtoToSend = new BuildingDto
+            {
+                Guid = building.Guid,
+                Name = building.Name,
+                Mapping = (Guid) retrievedMappingGuid,
+            };
+
+            var createdBuildingDto = await _buildingDataProviderClient.CreateBuildingAsync(buildingDtoToSend);
+
+            if (createdBuildingDto == null)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                                  "Errore durante la creazione del Building nel servizio dati esterno.");
+            }
+
 
             building.DeserializeComplexData();
 
@@ -107,20 +125,24 @@ namespace BuildingService.Controllers
 
             building.SerializeComplexData();
 
-            try
+            var buildingDtoToSend = new BuildingDto
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
+                Guid = building.Guid,
+                Name = building.Name,
+                Mapping = building.Mapping,
+            };
+
+            var success = await _buildingDataProviderClient.UpdateBuildingAsync(guid, buildingDtoToSend);
+
+            if (!success)
             {
-                if (!BuildingExists(guid))
+                var existingBuilding = await _buildingDataProviderClient.GetBuildingByIdAsync(guid);
+                if (existingBuilding == null)
                 {
-                    return NotFound($"Building con GUID '{guid}' non trovato.");
+                    return NotFound($"Building con GUID '{guid}' non trovato nel servizio dati esterno.");
                 }
-                else
-                {
-                    throw;
-                }
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                                  "Errore durante l'aggiornamento del Building nel servizio dati esterno.");
             }
 
             return NoContent();
@@ -132,21 +154,20 @@ namespace BuildingService.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteBuilding(Guid guid)
         {
-            var building = await _context.Buildings.FindAsync(guid);
-            if (building == null)
+            var success = await _buildingDataProviderClient.DeleteBuildingAsync(guid);
+
+            if (!success)
             {
-                return NotFound($"Building con GUID '{guid}' non trovato.");
+                var existingBuilding = await _buildingDataProviderClient.GetBuildingByIdAsync(guid);
+                if (existingBuilding == null)
+                {
+                    return NotFound($"Building con GUID '{guid}' non trovato nel servizio dati esterno.");
+                }
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                                  "Errore durante l'eliminazione del Building nel servizio dati esterno.");
             }
 
-            _context.Buildings.Remove(building);
-            await _context.SaveChangesAsync();
-
             return NoContent();
-        }
-
-        private bool BuildingExists(Guid guid)
-        {
-            return _context.Buildings.Any(e => e.Guid == guid);
         }
     }
 }
