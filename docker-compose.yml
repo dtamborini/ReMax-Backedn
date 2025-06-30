@@ -30,6 +30,8 @@ services:
     depends_on:
       db_postgres:
         condition: service_healthy
+      oauthmockserver:
+        condition: service_started
     restart: on-failure
 
   buildingservice:
@@ -62,6 +64,62 @@ services:
     depends_on:
       db_postgres:
         condition: service_healthy
+      oauthmockserver:
+        condition: service_started
+    restart: on-failure
+
+  workorderservice:
+    image: ${DOCKER_REGISTRY-}workorderservice
+    build:
+      context: .
+      dockerfile: WorkOrderService/Dockerfile
+    ports:
+      - "8085:8080"
+    environment:
+      JwtSettings__Secret: super_secret_key_that_is_at_least_32_chars_long_and_very_secure_12345!
+    networks:
+      - mymicroservices_network
+    depends_on:
+      db_postgres:
+        condition: service_healthy
+      oauthmockserver:
+        condition: service_started
+    restart: on-failure
+
+  rfqservice:
+    image: ${DOCKER_REGISTRY-}rfqservice
+    build:
+      context: .
+      dockerfile: RfqService/Dockerfile
+    ports:
+      - "8086:8080"
+    environment:
+      JwtSettings__Secret: super_secret_key_that_is_at_least_32_chars_long_and_very_secure_12345!
+    networks:
+      - mymicroservices_network
+    depends_on:
+      db_postgres:
+        condition: service_healthy
+      oauthmockserver:
+        condition: service_started
+    restart: on-failure
+
+  quoteservice:
+    image: ${DOCKER_REGISTRY-}quoteservice
+    build:
+      context: .
+      dockerfile: QuoteService/Dockerfile
+    ports:
+      - "8087:8080"
+    environment:
+      JwtSettings__Secret: super_secret_key_that_is_at_least_32_chars_long_and_very_secure_12345!
+    networks:
+      - mymicroservices_network
+    depends_on:
+      db_postgres:
+        condition: service_healthy
+      oauthmockserver:
+        condition: service_started
     restart: on-failure
 
   db_postgres:

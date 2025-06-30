@@ -52,8 +52,8 @@ builder.Services.AddSwaggerGen(options =>
     {
         swaggerClientId = builder.Configuration["MockOAuthSettings:SwaggerClientId"];
         swaggerScopes = builder.Configuration.GetSection("MockOAuthSettings:SwaggerScopes").Get<string[]>();
-        authorizationUrl = "http://localhost:7005/oauth/authorize";
-        tokenUrl = "http://localhost:7005/oauth/token";
+        authorizationUrl = builder.Configuration["MockOAuthSettings:AuthorizationUrl"];
+        tokenUrl = builder.Configuration["MockOAuthSettings:TokenUrl"];
     }
     else
     {

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace WorkSheetService.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/buildings/{uuidBuilding}/[controller]")]
     [ApiController]
     [Authorize]
     public class WorkSheetsController : ControllerBase
