@@ -59,8 +59,8 @@ builder.Services.AddSwaggerGen(options =>
     {
         swaggerClientId = builder.Configuration["OAuthSettings:SwaggerClientId"];
         swaggerScopes = builder.Configuration.GetSection("OAuthSettings:SwaggerScopes").Get<string[]>();
-        authorizationUrl = builder.Configuration["OAuthSettings:AuthorizationUrl"];
-        tokenUrl = builder.Configuration["OAuthSettings:TokenEndpoint"];
+        authorizationUrl = builder.Configuration["MockOAuthSettings:AuthorizationUrl"];
+        tokenUrl = builder.Configuration["MockOAuthSettings:TokenUrl"];
     }
 
     if (string.IsNullOrEmpty(authorizationUrl) || string.IsNullOrEmpty(tokenUrl))

@@ -48,15 +48,15 @@ builder.Services.AddSwaggerGen(options =>
     {
         swaggerClientId = builder.Configuration["MockOAuthSettings:SwaggerClientId"];
         swaggerScopes = builder.Configuration.GetSection("MockOAuthSettings:SwaggerScopes").Get<string[]>();
-        authorizationUrl = "http://localhost:7005/oauth/authorize";
-        tokenUrl = "http://localhost:7005/oauth/token";
+        authorizationUrl = builder.Configuration["MockOAuthSettings:AuthorizationUrl"];
+        tokenUrl = builder.Configuration["MockOAuthSettings:TokenUrl"];
     }
     else
     {
         swaggerClientId = builder.Configuration["OAuthSettings:SwaggerClientId"];
         swaggerScopes = builder.Configuration.GetSection("OAuthSettings:SwaggerScopes").Get<string[]>();
-        authorizationUrl = builder.Configuration["OAuthSettings:AuthorizationUrl"];
-        tokenUrl = builder.Configuration["OAuthSettings:TokenEndpoint"];
+        authorizationUrl = builder.Configuration["MockOAuthSettings:AuthorizationUrl"];
+        tokenUrl = builder.Configuration["MockOAuthSettings:TokenUrl"];
     }
 
     if (string.IsNullOrEmpty(authorizationUrl) || string.IsNullOrEmpty(tokenUrl))
@@ -74,11 +74,6 @@ builder.Services.AddSwaggerGen(options =>
                 AuthorizationUrl = new Uri(authorizationUrl, UriKind.Absolute),
                 TokenUrl = new Uri(tokenUrl, UriKind.Absolute),
                 Scopes = swaggerScopes?.ToDictionary(s => s, s => $"Access to {s}") ?? new Dictionary<string, string>(),
-                Extensions = new Dictionary<string, IOpenApiExtension>
-                {
-                    { "x-tokenName", new OpenApiString("id_token") },
-                    { "x-use-pkce", new OpenApiBoolean(true) }
-                }
             }
         },
         Description = "Autenticazione OAuth 2.0 tramite il tuo Identity Provider esterno."
@@ -190,7 +185,30 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        var useMockOAuth = builder.Configuration.GetValue<bool>("Authentication:UseMockOAuth");
+
+        string? swaggerClientId;
+        string[]? swaggerScopes;
+
+        if (useMockOAuth)
+        {
+            swaggerClientId = builder.Configuration["MockOAuthSettings:SwaggerClientId"];
+            swaggerScopes = builder.Configuration.GetSection("MockOAuthSettings:SwaggerScopes").Get<string[]>();
+        }
+        else
+        {
+            swaggerClientId = builder.Configuration["OAuthSettings:SwaggerClientId"];
+            swaggerScopes = builder.Configuration.GetSection("OAuthSettings:SwaggerScopes").Get<string[]>();
+        }
+
+        options.OAuthClientId(swaggerClientId);
+        options.OAuthScopes(swaggerScopes ?? new string[] { });
+        options.OAuthUsePkce();
+        options.OAuthAppName("BuildingService Swagger UI");
+        options.OAuthUseBasicAuthenticationWithAccessCodeGrant();
+    });
 }
 
 using (var scope = app.Services.CreateScope())

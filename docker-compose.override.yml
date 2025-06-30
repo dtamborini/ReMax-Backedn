@@ -2,18 +2,16 @@ services:
   userservice:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=db_postgres;Port=5432;Database=main_database;Username=admin;Password=root;
 
   mappingservice:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=db_postgres;Port=5432;Database=main_database;Username=admin;Password=root;
- 
+
   buildingservice:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=db_postgres;Port=5432;Database=main_database;Username=admin;Password=root;
-
+  
   worksheetservice:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
@@ -32,4 +30,8 @@ services:
   quoteservice:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=db_postgres;Port=5432;Database=main_database;Username=admin;Password=root; 
+      - ConnectionStrings__DefaultConnection=Host=db_postgres;Port=5432;Database=main_database;Username=admin;Password=root;
+      
+  assetservice:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development

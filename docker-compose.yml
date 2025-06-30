@@ -122,6 +122,24 @@ services:
         condition: service_started
     restart: on-failure
 
+  assetservice:
+    image: ${DOCKER_REGISTRY-}assetservice
+    build:
+      context: .
+      dockerfile: AssetService/Dockerfile
+    ports:
+      - "8088:8080"
+    environment:
+      JwtSettings__Secret: super_secret_key_that_is_at_least_32_chars_long_and_very_secure_12345!
+    networks:
+      - mymicroservices_network
+    depends_on:
+      db_postgres:
+        condition: service_healthy
+      oauthmockserver:
+        condition: service_started
+    restart: on-failure
+
   db_postgres:
     image: postgres:16-alpine
     environment:

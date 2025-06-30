@@ -56,15 +56,15 @@ builder.Services.AddSwaggerGen(options =>
     {
         swaggerClientId = builder.Configuration["MockOAuthSettings:SwaggerClientId"];
         swaggerScopes = builder.Configuration.GetSection("MockOAuthSettings:SwaggerScopes").Get<string[]>();
-        authorizationUrl = "http://localhost:7005/oauth/authorize";
-        tokenUrl = "http://localhost:7005/oauth/token";
+        authorizationUrl = builder.Configuration["MockOAuthSettings:AuthorizationUrl"];
+        tokenUrl = builder.Configuration["MockOAuthSettings:TokenUrl"];
     }
     else
     {
         swaggerClientId = builder.Configuration["OAuthSettings:SwaggerClientId"];
         swaggerScopes = builder.Configuration.GetSection("OAuthSettings:SwaggerScopes").Get<string[]>();
-        authorizationUrl = builder.Configuration["OAuthSettings:AuthorizationUrl"];
-        tokenUrl = builder.Configuration["OAuthSettings:TokenEndpoint"];
+        authorizationUrl = builder.Configuration["MockOAuthSettings:AuthorizationUrl"];
+        tokenUrl = builder.Configuration["MockOAuthSettings:TokenUrl"];
     }
 
     if (string.IsNullOrEmpty(authorizationUrl) || string.IsNullOrEmpty(tokenUrl))
@@ -213,8 +213,6 @@ if (app.Environment.IsDevelopment())
         options.OAuthUseBasicAuthenticationWithAccessCodeGrant();
     });
 }
-
-app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
