@@ -2,13 +2,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerUI;
-using System.Security.AccessControl;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
 using UserService.Clients;
-using UserService.Handlers;
+using UserService.Handler;
 using UserService.Models.DTOs;
 using UserService.Services;
 
@@ -23,11 +21,16 @@ if (string.IsNullOrEmpty(jwtValidationSecretKey) || string.IsNullOrEmpty(signing
     throw new InvalidOperationException("JWT Secret not found in configuration.");
 }
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient<IMappingServiceHttpClient, MappingServiceHttpClient>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["MappingService:BaseUrl"]!);
+})
+.AddHttpMessageHandler(sp =>
+{
+    var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
+    return new AuthTokenHandler(httpContextAccessor);
 });
-
 
 builder.Services.AddHttpClient<IUserDataProviderClient, UserDataProviderClient>(client =>
 {

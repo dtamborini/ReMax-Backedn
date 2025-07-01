@@ -61,8 +61,8 @@ namespace WorkOrderService.Controllers
                 return BadRequest(ModelState);
             }
 
-            Guid? retrievedMappingGuid = await _mappingServiceHttpClient.GetMappingGuidByIdAsync(workOrder.Mapping);
-            if (retrievedMappingGuid == null)
+            var mapping = await _mappingServiceHttpClient.GetMappingByGuidAsync(workOrder.Mapping);
+            if (mapping == null)
             {
                 return NotFound($"Mapping with ID {workOrder.Mapping} not found or inaccessible.");
             }

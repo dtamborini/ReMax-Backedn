@@ -66,8 +66,8 @@ namespace AssetService.Controllers
                 return BadRequest(ModelState);
             }
 
-            Guid? retrievedMappingGuid = await _mappingServiceHttpClient.GetMappingGuidByIdAsync(asset.Mapping);
-            if (retrievedMappingGuid == null)
+            var mapping = await _mappingServiceHttpClient.GetMappingByGuidAsync(asset.Mapping);
+            if (mapping == null)
             {
                 return NotFound($"Mapping with ID {asset.Mapping} not found or inaccessible.");
             }
@@ -89,7 +89,7 @@ namespace AssetService.Controllers
             {
                 Guid = asset.Guid,
                 Name = asset.Name,
-                Mapping = (Guid) retrievedMappingGuid,
+                Mapping = mapping.Guid,
             };
 
             var createdAssetDto = await _assetDataProviderClient.CreateAssetAsync(assetDtoToSend);
@@ -136,8 +136,8 @@ namespace AssetService.Controllers
 
             if (!success)
             {
-                var existingBuilding = await _assetDataProviderClient.GetAssetByIdAsync(guid);
-                if (existingBuilding == null)
+                var existingAsset = await _assetDataProviderClient.GetAssetByIdAsync(guid);
+                if (existingAsset == null)
                 {
                     return NotFound($"Asset con GUID '{guid}' non trovato nel servizio dati esterno.");
                 }

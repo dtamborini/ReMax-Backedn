@@ -61,8 +61,8 @@ namespace RfqService.Controllers
                 return BadRequest(ModelState);
             }
 
-            Guid? retrievedMappingGuid = await _mappingServiceHttpClient.GetMappingGuidByIdAsync(rfq.Mapping);
-            if (retrievedMappingGuid == null)
+            var mapping = await _mappingServiceHttpClient.GetMappingByGuidAsync(rfq.Mapping);
+            if (mapping == null)
             {
                 return NotFound($"Mapping with ID {rfq.Mapping} not found or inaccessible.");
             }

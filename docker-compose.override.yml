@@ -35,3 +35,8 @@ services:
   assetservice:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      
+  attachmentservice:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=db_postgres;Port=5432;Database=main_database;Username=admin;Password=root;

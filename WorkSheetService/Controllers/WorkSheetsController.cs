@@ -61,11 +61,12 @@ namespace WorkSheetService.Controllers
                 return BadRequest(ModelState);
             }
 
-            Guid? retrievedMappingGuid = await _mappingServiceHttpClient.GetMappingGuidByIdAsync(workSheet.Mapping);
-            if (retrievedMappingGuid == null)
+            var mapping = await _mappingServiceHttpClient.GetMappingByGuidAsync(workSheet.Mapping);
+            if (mapping == null)
             {
                 return NotFound($"Mapping with ID {workSheet.Mapping} not found or inaccessible.");
             }
+
             // Validate workSheet with mapping
             if (workSheet.UniqueIdentifiers == null)
             {

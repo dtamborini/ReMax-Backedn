@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "t2YG2kP3wEI=",
+  "dgSpecHash": "V/B6NZiCKxU=",
   "success": true,
-  "projectFilePath": "C:\\Users\\david\\Documents\\REMAX\\ReMaxApi\\AssetService\\AssetService.csproj",
+  "projectFilePath": "C:\\Users\\david\\Documents\\REMAX\\RemaxApi\\AssetService\\AssetService.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\david\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\david\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\8.0.17\\microsoft.aspnetcore.authentication.jwtbearer.8.0.17.nupkg.sha512",

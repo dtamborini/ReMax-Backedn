@@ -66,8 +66,12 @@ namespace BuildingService.Controllers
                 return BadRequest(ModelState);
             }
 
-            Guid? retrievedMappingGuid = await _mappingServiceHttpClient.GetMappingGuidByIdAsync(building.Mapping);
-            if (retrievedMappingGuid == null)
+            var mapping = await _mappingServiceHttpClient.GetMappingByGuidAsync(building.Mapping);
+            if (mapping == null)
+            {
+                return NotFound($"Mapping with ID {building.Mapping} not found or inaccessible.");
+            }
+            if (mapping == null)
             {
                 return NotFound($"Mapping with ID {building.Mapping} not found or inaccessible.");
             }
@@ -89,7 +93,7 @@ namespace BuildingService.Controllers
             {
                 Guid = building.Guid,
                 Name = building.Name,
-                Mapping = (Guid) retrievedMappingGuid,
+                Mapping = mapping.Guid,
             };
 
             var createdBuildingDto = await _buildingDataProviderClient.CreateBuildingAsync(buildingDtoToSend);

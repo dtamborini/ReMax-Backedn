@@ -28,6 +28,9 @@ namespace MappingService.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("MappingJsonData")
                         .IsRequired()
                         .HasColumnType("jsonb");
@@ -43,6 +46,9 @@ namespace MappingService.Migrations
                         .HasColumnName("xmin");
 
                     b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Version")
                         .HasColumnType("integer");
 
                     b.HasKey("Guid");

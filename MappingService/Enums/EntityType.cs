@@ -2,7 +2,6 @@
 {
     public enum EntityType
     {
-        None,
         Building,
         Ticket,
         Activity,

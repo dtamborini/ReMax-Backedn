@@ -1,0 +1,356 @@
+﻿using AttachmentService.Clients;
+using AttachmentService.Data;
+using AttachmentService.Enums;
+using AttachmentService.Models;
+using AttachmentService.Models.MappingDao;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using EntityState = AttachmentService.Models.EntityState;
+
+namespace AttachmentService.Controllers
+{
+    [Route("api/buildings/{uuidBuilding}/[controller]")]
+    [ApiController]
+    [Authorize]
+    public class AttachmentsController : ControllerBase
+    {
+        private readonly AttachmentDbContext _context;
+        private readonly IMappingServiceHttpClient _mappingServiceHttpClient;
+
+        public AttachmentsController(
+            AttachmentDbContext context,
+            IMappingServiceHttpClient mappingServiceHttpClient
+            )
+        {
+            _context = context;
+            _mappingServiceHttpClient = mappingServiceHttpClient;
+        }
+
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<Attachment>>> GetAttachments()
+        {
+            var attachments = await _context.Attachments.ToListAsync();
+
+            attachments.ForEach(b => b.DeserializeComplexData());
+            return Ok(attachments);
+        }
+
+        [HttpGet("{guid}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<Attachment>> GetAttachment(Guid guid)
+        {
+            var attachment = await _context.Attachments.FindAsync(guid);
+
+            if (attachment == null)
+            {
+                return NotFound($"Attachment con GUID '{guid}' non trovato.");
+            }
+
+            attachment.DeserializeComplexData();
+            return Ok(attachment);
+        }
+
+        [HttpPut("{guid}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateAttachment(Guid guid, [FromBody] Attachment attachment)
+        {
+            if (guid != attachment.Guid)
+            {
+                return BadRequest("Il GUID nella rotta non corrisponde al GUID del workOrder fornito.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+
+            attachment.SerializeComplexData();
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!attachmentExists(guid))
+                {
+                    return NotFound($"Attachment con GUID '{guid}' non trovato.");
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+
+        [HttpDelete("{guid}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteAttachment(Guid guid)
+        {
+            var workOrder = await _context.Attachments.FindAsync(guid);
+            if (workOrder == null)
+            {
+                return NotFound($"Attachment con GUID '{guid}' non trovato.");
+            }
+
+            _context.Attachments.Remove(workOrder);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        [HttpPost("tree")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<AttachmentTree>> GetAttachmentTree(Guid uuidBuilding)
+        {
+            var attachmentsForBuilding = await _context.Attachments
+                .Where(a => a.BuildingGuid == uuidBuilding)
+                .ToListAsync();
+
+            if (!attachmentsForBuilding.Any())
+            {
+                return NotFound($"Nessun allegato trovato per l'edificio con UUID '{uuidBuilding}'.");
+            }
+
+            var attachmentTree = new AttachmentTree
+            {
+                BuildingId = uuidBuilding,
+            };
+
+            return Ok(attachmentTree);
+        }
+
+        [HttpGet("{uuid}/download")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DownloadAttachment(Guid uuidBuilding, Guid uuid)
+        {
+            var attachment = await _context.Attachments.FirstOrDefaultAsync(a => a.Guid == uuid && a.BuildingGuid == uuidBuilding);
+
+            if (attachment == null)
+            {
+                return NotFound($"Allegato con GUID '{uuid}' non trovato per l'edificio '{uuidBuilding}'.");
+            }
+
+            // TODO: retrieve file logic.
+            var filePath = Path.Combine("path/to/your/storage", attachment.Attachments[0].FileName);
+            if (!System.IO.File.Exists(filePath))
+            {
+                return NotFound($"File '{attachment.Attachments[0].FileName}' non trovato sul server.");
+            }
+
+            var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            return File(fileStream, attachment.Attachments[0].Content, attachment.Attachments[0].FileName);
+        }
+
+        [HttpPost("upload")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<Attachment>> UploadAttachment(Guid uuidBuilding, IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("Nessun file inviato.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var attachmentMapping = await _mappingServiceHttpClient.GetMappingsWithOptionalParameters(isActive: true, entityType: EntityType.Attachment);
+            var entityMapping = attachmentMapping.FirstOrDefault();
+
+            if (entityMapping == null)
+            {
+                return NotFound("Nessun 'Attachment' mapping attivo trovato. Impossibile procedere con l'upload.");
+            }
+
+            //var uploadPath = Path.Combine("path/to/your/storage", uuidBuilding.ToString());
+            //if (!Directory.Exists(uploadPath))
+            //{
+            //    Directory.CreateDirectory(uploadPath);
+            //}
+
+            var attachmentGuid = Guid.NewGuid();
+            var fileName = $"{attachmentGuid}_{file.FileName}";
+            //var filePath = Path.Combine(uploadPath, fileName);
+
+            //using (var stream = new FileStream(filePath, FileMode.Create))
+            //{
+            //    await file.CopyToAsync(stream);
+            //}
+            
+            //User data
+            var uuidClaim = User.Claims.FirstOrDefault(c => c.Type == "guid");
+            Guid? userUuid = null;
+            if (uuidClaim != null && Guid.TryParse(uuidClaim.Value, out Guid parsedUuid))
+            {
+                userUuid = parsedUuid;
+            }
+            var participation = new EntityParticipation
+            {
+                User = (Guid)userUuid!,
+                Timestamp = DateTime.UtcNow,
+            };
+
+            // Entity
+            var attachment = new Attachment
+            {
+                Guid = attachmentGuid,
+                BuildingGuid = uuidBuilding,
+                Name = fileName,
+                Mapping = entityMapping.Guid,
+                Properties = entityMapping.Properties.Select(mapping => new EntityProperty
+                {
+                    Type = mapping.Type,
+                    Name = mapping.Name,
+                    HashCode = mapping.HashCode,
+                }).ToList(),
+            };
+
+            // Identifiers
+            attachment.UniqueIdentifiers.Add(new EntityUniqueIdentifier
+            {
+                Type = UniqueIdentifierType.QR,
+                Value = attachment.Guid.ToString()
+            });
+
+            // Attachments
+            attachment.Attachments.Add(new EntityAttachment
+            {
+                Guid = attachmentGuid,
+                Name = fileName,
+                Content = file.ContentType,
+                FileName = fileName,
+                Dates = new List<EntityDate> {
+                   new EntityDate
+                   {
+                        DateType = DateType.Created,
+                        User = participation
+                    },
+                },
+            });
+
+            //Participations
+            attachment.Participations.Add(new EntityParticipation
+            {
+                User = (Guid)userUuid!,
+                Timestamp = DateTime.UtcNow,
+            });
+
+            //States
+            attachment.States.Add(new EntityState
+            {
+                Value = DateType.Created,
+                Date = DateTime.UtcNow,
+            });
+
+            attachment.SerializeComplexData();
+            _context.Attachments.Add(attachment);
+            await _context.SaveChangesAsync();
+
+            attachment.DeserializeComplexData();
+
+            return CreatedAtAction(nameof(GetAttachment), new { guid = attachment.Guid, uuidBuilding = uuidBuilding }, attachment);
+        }
+
+        [HttpPost("{uuid}/upload")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<Attachment>> UploadAttachmentWithGuid(Guid uuidBuilding, Guid guidAttachment, IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("Nessun file inviato.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var uploadPath = Path.Combine("path/to/your/storage", guidAttachment.ToString());
+            if (!Directory.Exists(uploadPath))
+            {
+                Directory.CreateDirectory(uploadPath);
+            }
+
+            var fileName = $"{guidAttachment}_{file.FileName}";
+            var filePath = Path.Combine(uploadPath, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var attachment = new Attachment
+            {
+                Guid = guidAttachment,
+                BuildingGuid = uuidBuilding,
+                Name = fileName,
+                Mapping = Guid.Empty,
+            };
+
+            // Identifiers
+            attachment.UniqueIdentifiers.Add(new EntityUniqueIdentifier
+            {
+                Type = UniqueIdentifierType.QR,
+                Value = attachment.Guid.ToString()
+            });
+
+            // Attachments
+            attachment.Attachments.Add(new EntityAttachment
+            {
+                Guid = guidAttachment,
+                Name = fileName,
+                Content = file.ContentType,
+                FileName = fileName,
+            });
+
+            //Participations
+            var uuidClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier || c.Type == "sub" || c.Type == "uuid");
+            Guid? userUuid = null;
+            if (uuidClaim != null && Guid.TryParse(uuidClaim.Value, out Guid parsedUuid))
+            {
+                userUuid = parsedUuid;
+            }
+            attachment.Participations.Add(new EntityParticipation
+            {
+                User = (Guid)userUuid!,
+                Timestamp = DateTime.UtcNow,
+            });
+
+            //States
+            attachment.States.Add(new EntityState
+            {
+                Value = DateType.Created,
+                Date = DateTime.UtcNow,
+            });
+
+            _context.Attachments.Add(attachment);
+            await _context.SaveChangesAsync();
+
+            attachment.DeserializeComplexData();
+
+            return CreatedAtAction(nameof(GetAttachment), new { guid = attachment.Guid, uuidBuilding = uuidBuilding }, attachment);
+        }
+
+        private bool attachmentExists(Guid guid)
+        {
+            return _context.Attachments.Any(e => e.Guid == guid);
+        }
+    }
+}

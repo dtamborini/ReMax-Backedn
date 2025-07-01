@@ -65,8 +65,8 @@ namespace UserService.Controllers
                 return BadRequest(ModelState);
             }
 
-            Guid? retrievedMappingGuid = await _mappingServiceHttpClient.GetMappingGuidByIdAsync(user.Mapping);
-            if (retrievedMappingGuid == null)
+            var mapping = await _mappingServiceHttpClient.GetMappingByGuidAsync(user.Mapping);
+            if (mapping == null)
             {
                 return NotFound($"Mapping with ID {user.Mapping} not found or inaccessible.");
             }
@@ -88,7 +88,7 @@ namespace UserService.Controllers
             {
                 Guid = user.Guid,
                 Name = user.Name,
-                Mapping = (Guid)retrievedMappingGuid,
+                Mapping = mapping.Guid,
             };
 
             var createdBuildingDto = await _userDataProviderClient.CreateUserAsync(buildingDtoToSend);

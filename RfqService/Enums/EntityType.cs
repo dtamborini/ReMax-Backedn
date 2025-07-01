@@ -2,7 +2,6 @@
 {
     public enum EntityType
     {
-        None,
         Building,
         Ticket,
         Activity,
@@ -13,5 +12,6 @@
         WorkSheet,
         WorkQuote,
         Rfq,
+        User,
     }
 }

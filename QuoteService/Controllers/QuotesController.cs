@@ -61,8 +61,8 @@ namespace QuoteService.Controllers
                 return BadRequest(ModelState);
             }
 
-            Guid? retrievedMappingGuid = await _mappingServiceHttpClient.GetMappingGuidByIdAsync(quote.Mapping);
-            if (retrievedMappingGuid == null)
+            var mapping = await _mappingServiceHttpClient.GetMappingByGuidAsync(quote.Mapping);
+            if (mapping == null)
             {
                 return NotFound($"Mapping with ID {quote.Mapping} not found or inaccessible.");
             }

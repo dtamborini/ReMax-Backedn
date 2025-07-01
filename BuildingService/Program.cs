@@ -1,4 +1,5 @@
 using BuildingService.Clients;
+using BuildingService.Handler;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
@@ -20,10 +21,15 @@ if (string.IsNullOrEmpty(jwtValidationSecretKey) || string.IsNullOrEmpty(signing
     throw new InvalidOperationException("JWT Secret not found in configuration.");
 }
 
-
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient<IMappingServiceHttpClient, MappingServiceHttpClient>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["MappingService:BaseUrl"]!);
+})
+.AddHttpMessageHandler(sp =>
+{
+    var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
+    return new AuthTokenHandler(httpContextAccessor);
 });
 
 builder.Services.AddHttpClient<IBuildingDataProviderClient, BuildingDataProviderClient>(client => {

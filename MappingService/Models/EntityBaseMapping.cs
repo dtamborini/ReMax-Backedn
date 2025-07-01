@@ -10,7 +10,7 @@ public abstract class EntityBaseMapping
     public Guid Guid { get; set; } = Guid.NewGuid();
     public required string Name { get; set; }
 
-    public EntityType Type { get; set; } = EntityType.None;
+    public required EntityType Type { get; set; }
 
     [NotMapped]
     public List<EntityAttachment> Attachments { get; set; } = new List<EntityAttachment>();

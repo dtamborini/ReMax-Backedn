@@ -1,8 +1,9 @@
-﻿ using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MappingService.Data;
 using MappingService.Models;
 using Microsoft.AspNetCore.Authorization;
+using MappingService.Enums;
 
 namespace MappingService.Controllers
 {
@@ -19,9 +20,23 @@ namespace MappingService.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<EntityMapping>>> GetMappings()
+        public async Task<ActionResult<IEnumerable<EntityMapping>>> GetMappings(
+            [FromQuery] bool? isActive = null,
+            [FromQuery] EntityType? entityType = null)
         {
-            var mappings = await _context.Mappings.ToListAsync();
+            var query = _context.Mappings.AsQueryable();
+
+            if (isActive.HasValue)
+            {
+                query = query.Where(m => m.IsActive == isActive.Value);
+            }
+
+            if (entityType.HasValue)
+            {
+                query = query.Where(m => m.Type == entityType.Value);
+            }
+
+            var mappings = await query.ToListAsync();
             mappings.ForEach(m => m.DeserializeComplexData());
             return mappings;
         }

@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using RfqService.Clients;
 using RfqService.Data;
+using RfqService.Handler;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,8 +23,15 @@ if (string.IsNullOrEmpty(jwtValidationSecretKey) || string.IsNullOrEmpty(signing
     throw new InvalidOperationException("JWT Secret not found in configuration.");
 }
 
-builder.Services.AddHttpClient<IMappingServiceHttpClient, MappingServiceHttpClient>(client => {
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient<IMappingServiceHttpClient, MappingServiceHttpClient>(client =>
+{
     client.BaseAddress = new Uri(builder.Configuration["MappingService:BaseUrl"]!);
+})
+.AddHttpMessageHandler(sp =>
+{
+    var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
+    return new AuthTokenHandler(httpContextAccessor);
 });
 
 builder.Services.AddControllers()

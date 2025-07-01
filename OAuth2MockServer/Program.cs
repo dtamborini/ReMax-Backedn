@@ -222,6 +222,7 @@ app.MapPost("/oauth/token", async (HttpRequest request, ILogger<Program> logger)
                 new Claim(JwtRegisteredClaimNames.Sub, "mock_user_id"),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.Name, "testuser"),
+                new Claim("guid", "a1b2c3d4-e5f6-7890-1234-567890abcdef"),
                 new Claim("scope", "openid profile api1")
             }),
             Expires = DateTime.UtcNow.AddSeconds(expiresIn),

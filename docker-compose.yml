@@ -140,6 +140,24 @@ services:
         condition: service_started
     restart: on-failure
 
+  attachmentservice:
+    image: ${DOCKER_REGISTRY-}attachmentservice
+    build:
+      context: .
+      dockerfile: AttachmentService/Dockerfile
+    ports:
+      - "8089:8080"
+    environment:
+      JwtSettings__Secret: super_secret_key_that_is_at_least_32_chars_long_and_very_secure_12345!
+    networks:
+      - mymicroservices_network
+    depends_on:
+      db_postgres:
+        condition: service_healthy
+      oauthmockserver:
+        condition: service_started
+    restart: on-failure
+
   db_postgres:
     image: postgres:16-alpine
     environment:

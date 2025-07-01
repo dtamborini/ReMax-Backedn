@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\david\\Documents\\REMAX\\ReMaxApi\\WorkOrderService\\WorkOrderService.csproj": {}
+    "C:\\Users\\david\\Documents\\REMAX\\RemaxApi\\WorkOrderService\\WorkOrderService.csproj": {}
   },
   "projects": {
-    "C:\\Users\\david\\Documents\\REMAX\\ReMaxApi\\WorkOrderService\\WorkOrderService.csproj": {
+    "C:\\Users\\david\\Documents\\REMAX\\RemaxApi\\WorkOrderService\\WorkOrderService.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\david\\Documents\\REMAX\\ReMaxApi\\WorkOrderService\\WorkOrderService.csproj",
+        "projectUniqueName": "C:\\Users\\david\\Documents\\REMAX\\RemaxApi\\WorkOrderService\\WorkOrderService.csproj",
         "projectName": "WorkOrderService",
-        "projectPath": "C:\\Users\\david\\Documents\\REMAX\\ReMaxApi\\WorkOrderService\\WorkOrderService.csproj",
+        "projectPath": "C:\\Users\\david\\Documents\\REMAX\\RemaxApi\\WorkOrderService\\WorkOrderService.csproj",
         "packagesPath": "C:\\Users\\david\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\david\\Documents\\REMAX\\ReMaxApi\\WorkOrderService\\obj\\",
+        "outputPath": "C:\\Users\\david\\Documents\\REMAX\\RemaxApi\\WorkOrderService\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
