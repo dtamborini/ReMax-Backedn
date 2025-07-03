@@ -37,6 +37,8 @@ namespace BuildingService.Controllers
                     "Impossibile recuperare i dati dei Building dal servizio dati esterno.");
             }
 
+             //Mapping
+
             return Ok(buildings);
         }
 

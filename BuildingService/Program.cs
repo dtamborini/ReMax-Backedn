@@ -32,7 +32,7 @@ builder.Services.AddHttpClient<IMappingServiceHttpClient, MappingServiceHttpClie
     return new AuthTokenHandler(httpContextAccessor);
 });
 
-builder.Services.AddHttpClient<IBuildingDataProviderClient, BuildingDataProviderClient>(client => {
+builder.Services.AddHttpClient<IBuildingDataProviderClient, JsonServerBuildingDataProviderClient>(client => {
     client.BaseAddress = new Uri(builder.Configuration["BuildingDataProviderService:BaseUrl"]!);
 });
 
