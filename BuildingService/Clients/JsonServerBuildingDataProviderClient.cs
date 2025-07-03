@@ -47,7 +47,6 @@ public class JsonServerBuildingDataProviderClient : IBuildingDataProviderClient
         request.Content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
         var response = await _httpClient.SendAsync(request);
-
         response.EnsureSuccessStatusCode();
 
         var options = new JsonSerializerOptions
@@ -58,7 +57,16 @@ public class JsonServerBuildingDataProviderClient : IBuildingDataProviderClient
             },
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
-        return await response.Content.ReadFromJsonAsync<IEnumerable<BuildingDto>>(options);
+        try
+        {
+
+            return await response.Content.ReadFromJsonAsync<IEnumerable<BuildingDto>>(options);
+        }
+        catch (JsonException ex)
+        {
+            Console.WriteLine($"Errore di deserializzazione JSON: {ex.Message}");
+            return null;
+        }
     }
 
     public async Task<BuildingDto?> GetBuildingByIdAsync(Guid id)
@@ -71,12 +79,6 @@ public class JsonServerBuildingDataProviderClient : IBuildingDataProviderClient
         request.Content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
         var response = await _httpClient.SendAsync(request);
-
-        string rawJsonResponse = await response.Content.ReadAsStringAsync();
-        Console.WriteLine("--- RAW JSON RESPONSE INIZIO ---");
-        Console.WriteLine(rawJsonResponse);
-        Console.WriteLine("--- RAW JSON RESPONSE FINE ---");
-
         response.EnsureSuccessStatusCode();
 
         var options = new JsonSerializerOptions
@@ -92,11 +94,10 @@ public class JsonServerBuildingDataProviderClient : IBuildingDataProviderClient
 
             return await response.Content.ReadFromJsonAsync<BuildingDto>(options);
         }
-        catch (System.Text.Json.JsonException ex)
+        catch (JsonException ex)
         {
             Console.WriteLine($"Errore di deserializzazione JSON: {ex.Message}");
-            Console.WriteLine($"JSON problematico: {rawJsonResponse}");
-            throw;
+            return null;
         }
     }
 
