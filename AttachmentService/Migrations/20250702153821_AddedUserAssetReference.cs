@@ -11,45 +11,29 @@ namespace AttachmentService.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<Guid>(
+            migrationBuilder.AddColumn<Guid>(
                 name: "UserGuid",
                 table: "Attachments",
                 type: "uuid",
-                nullable: true,
-                oldClrType: typeof(Guid),
-                oldType: "uuid");
+                nullable: true);
 
-            migrationBuilder.AlterColumn<Guid>(
+            migrationBuilder.AddColumn<Guid>(
                 name: "AssetGuid",
                 table: "Attachments",
                 type: "uuid",
-                nullable: true,
-                oldClrType: typeof(Guid),
-                oldType: "uuid");
+                nullable: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<Guid>(
-                name: "UserGuid",
-                table: "Attachments",
-                type: "uuid",
-                nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"),
-                oldClrType: typeof(Guid),
-                oldType: "uuid",
-                oldNullable: true);
-
-            migrationBuilder.AlterColumn<Guid>(
+            migrationBuilder.DropColumn(
                 name: "AssetGuid",
-                table: "Attachments",
-                type: "uuid",
-                nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"),
-                oldClrType: typeof(Guid),
-                oldType: "uuid",
-                oldNullable: true);
+                table: "Attachments");
+
+            migrationBuilder.DropColumn(
+                name: "UserGuid",
+                table: "Attachments");
         }
     }
 }

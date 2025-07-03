@@ -36,6 +36,10 @@ if (string.IsNullOrEmpty(jwtValidationSecretKey) || string.IsNullOrEmpty(signing
 // Services
 builder.Services.AddTransient<IAttachmentFactoryService, AttachmentFactoryService>();
 builder.Services.AddScoped<UserClaimService>();
+builder.Services.AddScoped<IEntityPropertyPatchService, EntityPropertyPatchService>();
+builder.Services.AddScoped<IAttachmentPatchService, AttachmentPatchService>();
+
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient<IMappingServiceHttpClient, MappingServiceHttpClient>(client =>
 {

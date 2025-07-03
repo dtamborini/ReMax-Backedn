@@ -18,18 +18,24 @@ namespace AttachmentService.Controllers
         private readonly AttachmentDbContext _context;
         private readonly IMappingServiceHttpClient _mappingServiceHttpClient;
         private readonly IAttachmentFactoryService _attachmentFactoryService;
+        private readonly IEntityPropertyPatchService _entityPropertyPatchService;
+        private readonly IAttachmentPatchService _attachmentPatchService;
 
         public AttachmentsController(
             UserClaimService userClaimService,
             AttachmentDbContext context,
             IAttachmentFactoryService attachmentFactoryService,
-            IMappingServiceHttpClient mappingServiceHttpClient
+            IMappingServiceHttpClient mappingServiceHttpClient,
+            IEntityPropertyPatchService entityPropertyPatchService,
+            IAttachmentPatchService attachmentPatchService
             )
         {
             _context = context;
             _userClaimService = userClaimService;
             _mappingServiceHttpClient = mappingServiceHttpClient;
             _attachmentFactoryService = attachmentFactoryService;
+            _entityPropertyPatchService = entityPropertyPatchService;
+            _attachmentPatchService = attachmentPatchService;
         }
 
         [HttpGet]
@@ -56,6 +62,65 @@ namespace AttachmentService.Controllers
 
             attachment.DeserializeComplexData();
             return Ok(attachment);
+        }
+
+        [HttpPatch("{guid}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> PatchAttachment(
+            Guid uuidBuilding,
+            Guid guid,
+            [FromBody] Attachment patchDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var attachment = await _context.Attachments.FirstOrDefaultAsync(a => a.Guid == guid && a.BuildingGuid == uuidBuilding);
+
+            if (attachment == null)
+            {
+                return NotFound($"Attachment con GUID '{guid}' non trovato per l'edificio '{uuidBuilding}'.");
+            }
+
+            Guid? userUuid = _userClaimService.GetUserGuidFromPrincipal(User);
+            if (userUuid == null)
+            {
+                return Unauthorized("Impossibile determinare l'utente dal token di autenticazione o token non valido.");
+            }
+
+            var participation = new EntityParticipation
+            {
+                User = (Guid) userUuid,
+                Timestamp = DateTime.UtcNow,
+            };
+            await _attachmentPatchService.ApplyAttachmentPatch(attachment, patchDto, participation);
+
+            try
+            {
+                _context.Attachments.Update(attachment);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!attachmentExists(guid))
+                {
+                    return NotFound($"Attachment con GUID '{guid}' non trovato.");
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Errore durante il patch dell'allegato: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Si è verificato un errore durante l'aggiornamento dell'allegato: " + ex.Message);
+            }
+
+            return NoContent();
         }
 
         [HttpPut("{guid}")]

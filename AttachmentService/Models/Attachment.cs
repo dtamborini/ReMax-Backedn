@@ -5,27 +5,27 @@ namespace AttachmentService.Models
     public class Attachment : EntityBaseDomain
     {
         [JsonIgnore]
-        public Guid? AssetGuid { get; set; }
+        public Guid? AssetGuid { get; init; }
         [JsonIgnore]
-        public Guid? UserGuid { get; set; }
+        public Guid? UserGuid { get; init; }
         [JsonIgnore]
-        public Guid BuildingGuid { get; set; }
+        public Guid BuildingGuid { get; init; }
         [JsonIgnore]
-        public Guid? WorkOrderGuid { get; set; }
+        public Guid? WorkOrderGuid { get; init; }
         [JsonIgnore]
-        public Guid? WorkSheetGuid { get; set; }
+        public Guid? WorkSheetGuid { get; init; }
         [JsonIgnore]
-        public Guid? QuoteGuid { get; set; }
+        public Guid? QuoteGuid { get; init; }
         [JsonIgnore]
-        public Guid? RfqGuid { get; set; }
+        public Guid? RfqGuid { get; init; }
         [JsonIgnore]
-        public Guid? TicketGuid { get; set; }
+        public Guid? TicketGuid { get; init; }
         [JsonIgnore]
-        public Guid? ActivityGuid { get; set; }
+        public Guid? ActivityGuid { get; init; }
         [JsonIgnore]
-        public Guid? AccidentGuid { get; set; }
+        public Guid? AccidentGuid { get; init; }
         [JsonIgnore]
-        public Guid? NotificationGuid { get; set; }
+        public Guid? NotificationGuid { get; init; }
     }
 
 }

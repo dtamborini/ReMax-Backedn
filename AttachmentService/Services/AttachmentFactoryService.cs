@@ -29,12 +29,7 @@ namespace AttachmentService.Services
                 BuildingGuid = buildingGuid,
                 Name = fileName,
                 Mapping = entityMapping.Guid,
-                Properties = entityMapping.Properties.Select(mapping => new EntityProperty
-                {
-                    Type = mapping.Type,
-                    Name = mapping.Name,
-                    HashCode = mapping.HashCode,
-                }).ToList(),
+                Properties = PropertyMapper.MapProperties(entityMapping.Properties, participation),
             };
 
             // Identifiers
@@ -75,6 +70,38 @@ namespace AttachmentService.Services
             });
 
             return attachment;
+        }
+    }
+
+    public static class PropertyMapper
+    {
+        public static List<EntityProperty> MapProperties(
+            List<EntityPropertyMapping> entityPropertyMappings,
+            EntityParticipation participation)
+        {
+            if (entityPropertyMappings == null)
+            {
+                return new List<EntityProperty>();
+            }
+
+            return entityPropertyMappings.Select(mapping => new EntityProperty
+            {
+                Name = mapping.Name,
+                Type = mapping.Type,
+                Title = mapping.Title,
+                Attributes = mapping.Attributes,
+                Value = mapping.Value,
+                Properties = MapProperties(mapping.Properties, participation),
+                Dates = new List<EntityDate>
+                {
+                    new EntityDate
+                    {
+                        DateType = DateType.Created,
+                        User = participation
+                    }
+                },
+                HashCode = mapping.HashCode,
+            }).ToList();
         }
     }
 }
