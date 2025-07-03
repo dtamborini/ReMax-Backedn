@@ -2,12 +2,10 @@
 using AttachmentService.Data;
 using AttachmentService.Enums;
 using AttachmentService.Models;
-using AttachmentService.Models.MappingDao;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
-using EntityState = AttachmentService.Models.EntityState;
+using AttachmentService.Interfaces;
 
 namespace AttachmentService.Controllers
 {
@@ -16,16 +14,22 @@ namespace AttachmentService.Controllers
     [Authorize]
     public class AttachmentsController : ControllerBase
     {
+        private readonly UserClaimService _userClaimService;
         private readonly AttachmentDbContext _context;
         private readonly IMappingServiceHttpClient _mappingServiceHttpClient;
+        private readonly IAttachmentFactoryService _attachmentFactoryService;
 
         public AttachmentsController(
+            UserClaimService userClaimService,
             AttachmentDbContext context,
+            IAttachmentFactoryService attachmentFactoryService,
             IMappingServiceHttpClient mappingServiceHttpClient
             )
         {
             _context = context;
+            _userClaimService = userClaimService;
             _mappingServiceHttpClient = mappingServiceHttpClient;
+            _attachmentFactoryService = attachmentFactoryService;
         }
 
         [HttpGet]
@@ -132,16 +136,16 @@ namespace AttachmentService.Controllers
             return Ok(attachmentTree);
         }
 
-        [HttpGet("{uuid}/download")]
+        [HttpGet("{guid}/download")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> DownloadAttachment(Guid uuidBuilding, Guid uuid)
+        public async Task<IActionResult> DownloadAttachment(Guid uuidBuilding, Guid guid)
         {
-            var attachment = await _context.Attachments.FirstOrDefaultAsync(a => a.Guid == uuid && a.BuildingGuid == uuidBuilding);
+            var attachment = await _context.Attachments.FirstOrDefaultAsync(a => a.Guid == guid && a.BuildingGuid == uuidBuilding);
 
             if (attachment == null)
             {
-                return NotFound($"Allegato con GUID '{uuid}' non trovato per l'edificio '{uuidBuilding}'.");
+                return NotFound($"Allegato con GUID '{guid}' non trovato per l'edificio '{uuidBuilding}'.");
             }
 
             // TODO: retrieve file logic.
@@ -182,81 +186,34 @@ namespace AttachmentService.Controllers
             //if (!Directory.Exists(uploadPath))
             //{
             //    Directory.CreateDirectory(uploadPath);
-            //}
+            //
 
             var attachmentGuid = Guid.NewGuid();
-            var fileName = $"{attachmentGuid}_{file.FileName}";
+            var fileName = file.FileName;
+            var fileContentType = file.ContentType;
             //var filePath = Path.Combine(uploadPath, fileName);
 
             //using (var stream = new FileStream(filePath, FileMode.Create))
             //{
             //    await file.CopyToAsync(stream);
             //}
-            
+
             //User data
-            var uuidClaim = User.Claims.FirstOrDefault(c => c.Type == "guid");
-            Guid? userUuid = null;
-            if (uuidClaim != null && Guid.TryParse(uuidClaim.Value, out Guid parsedUuid))
+            Guid? userUuid = _userClaimService.GetUserGuidFromPrincipal(User);
+            if (userUuid == null)
             {
-                userUuid = parsedUuid;
+                return Unauthorized("Impossibile determinare l'utente dal token di autenticazione o token non valido.");
             }
-            var participation = new EntityParticipation
-            {
-                User = (Guid)userUuid!,
-                Timestamp = DateTime.UtcNow,
-            };
 
-            // Entity
-            var attachment = new Attachment
-            {
-                Guid = attachmentGuid,
-                BuildingGuid = uuidBuilding,
-                Name = fileName,
-                Mapping = entityMapping.Guid,
-                Properties = entityMapping.Properties.Select(mapping => new EntityProperty
-                {
-                    Type = mapping.Type,
-                    Name = mapping.Name,
-                    HashCode = mapping.HashCode,
-                }).ToList(),
-            };
-
-            // Identifiers
-            attachment.UniqueIdentifiers.Add(new EntityUniqueIdentifier
-            {
-                Type = UniqueIdentifierType.QR,
-                Value = attachment.Guid.ToString()
-            });
-
-            // Attachments
-            attachment.Attachments.Add(new EntityAttachment
-            {
-                Guid = attachmentGuid,
-                Name = fileName,
-                Content = file.ContentType,
-                FileName = fileName,
-                Dates = new List<EntityDate> {
-                   new EntityDate
-                   {
-                        DateType = DateType.Created,
-                        User = participation
-                    },
-                },
-            });
-
-            //Participations
-            attachment.Participations.Add(new EntityParticipation
-            {
-                User = (Guid)userUuid!,
-                Timestamp = DateTime.UtcNow,
-            });
-
-            //States
-            attachment.States.Add(new EntityState
-            {
-                Value = DateType.Created,
-                Date = DateTime.UtcNow,
-            });
+            // Build Entity
+            var attachment = _attachmentFactoryService.CreateAttachment(
+                attachmentGuid,
+                fileName,
+                entityMapping,
+                uuidBuilding,
+                userUuid.Value,
+                fileContentType
+            );
 
             attachment.SerializeComplexData();
             _context.Attachments.Add(attachment);
@@ -267,10 +224,10 @@ namespace AttachmentService.Controllers
             return CreatedAtAction(nameof(GetAttachment), new { guid = attachment.Guid, uuidBuilding = uuidBuilding }, attachment);
         }
 
-        [HttpPost("{uuid}/upload")]
+        [HttpPost("{guid}/upload")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<Attachment>> UploadAttachmentWithGuid(Guid uuidBuilding, Guid guidAttachment, IFormFile file)
+        public async Task<ActionResult<Attachment>> UploadAttachmentWithGuid(Guid uuidBuilding, Guid guid, IFormFile file)
         {
             if (file == null || file.Length == 0)
             {
@@ -282,64 +239,47 @@ namespace AttachmentService.Controllers
                 return BadRequest(ModelState);
             }
 
-            var uploadPath = Path.Combine("path/to/your/storage", guidAttachment.ToString());
-            if (!Directory.Exists(uploadPath))
+            var attachmentMapping = await _mappingServiceHttpClient.GetMappingsWithOptionalParameters(isActive: true, entityType: EntityType.Attachment);
+            var entityMapping = attachmentMapping.FirstOrDefault();
+
+            if (entityMapping == null)
             {
-                Directory.CreateDirectory(uploadPath);
+                return NotFound("Nessun 'Attachment' mapping attivo trovato. Impossibile procedere con l'upload.");
             }
 
-            var fileName = $"{guidAttachment}_{file.FileName}";
-            var filePath = Path.Combine(uploadPath, fileName);
+            //var uploadPath = Path.Combine("path/to/your/storage", uuidBuilding.ToString());
+            //if (!Directory.Exists(uploadPath))
+            //{
+            //    Directory.CreateDirectory(uploadPath);
+            //
 
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            var fileName = file.FileName;
+            var fileContentType = file.ContentType;
+            //var filePath = Path.Combine(uploadPath, fileName);
+
+            //using (var stream = new FileStream(filePath, FileMode.Create))
+            //{
+            //    await file.CopyToAsync(stream);
+            //}
+
+            //User data
+            Guid? userUuid = _userClaimService.GetUserGuidFromPrincipal(User);
+            if (userUuid == null)
             {
-                await file.CopyToAsync(stream);
+                return Unauthorized("Impossibile determinare l'utente dal token di autenticazione o token non valido.");
             }
 
-            var attachment = new Attachment
-            {
-                Guid = guidAttachment,
-                BuildingGuid = uuidBuilding,
-                Name = fileName,
-                Mapping = Guid.Empty,
-            };
+            // Build Entity
+            var attachment = _attachmentFactoryService.CreateAttachment(
+                guid,
+                fileName,
+                entityMapping,
+                uuidBuilding,
+                userUuid.Value,
+                fileContentType
+            );
 
-            // Identifiers
-            attachment.UniqueIdentifiers.Add(new EntityUniqueIdentifier
-            {
-                Type = UniqueIdentifierType.QR,
-                Value = attachment.Guid.ToString()
-            });
-
-            // Attachments
-            attachment.Attachments.Add(new EntityAttachment
-            {
-                Guid = guidAttachment,
-                Name = fileName,
-                Content = file.ContentType,
-                FileName = fileName,
-            });
-
-            //Participations
-            var uuidClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier || c.Type == "sub" || c.Type == "uuid");
-            Guid? userUuid = null;
-            if (uuidClaim != null && Guid.TryParse(uuidClaim.Value, out Guid parsedUuid))
-            {
-                userUuid = parsedUuid;
-            }
-            attachment.Participations.Add(new EntityParticipation
-            {
-                User = (Guid)userUuid!,
-                Timestamp = DateTime.UtcNow,
-            });
-
-            //States
-            attachment.States.Add(new EntityState
-            {
-                Value = DateType.Created,
-                Date = DateTime.UtcNow,
-            });
-
+            attachment.SerializeComplexData();
             _context.Attachments.Add(attachment);
             await _context.SaveChangesAsync();
 

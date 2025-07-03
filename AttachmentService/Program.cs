@@ -1,6 +1,8 @@
 using AttachmentService.Clients;
 using AttachmentService.Data;
 using AttachmentService.Handler;
+using AttachmentService.Interfaces;
+using AttachmentService.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +33,9 @@ if (string.IsNullOrEmpty(jwtValidationSecretKey) || string.IsNullOrEmpty(signing
     throw new InvalidOperationException("JWT Secret not found in configuration.");
 }
 
+// Services
+builder.Services.AddTransient<IAttachmentFactoryService, AttachmentFactoryService>();
+builder.Services.AddScoped<UserClaimService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient<IMappingServiceHttpClient, MappingServiceHttpClient>(client =>
 {
@@ -42,6 +47,7 @@ builder.Services.AddHttpClient<IMappingServiceHttpClient, MappingServiceHttpClie
     return new AuthTokenHandler(httpContextAccessor);
 });
 
+// Controllers
 builder.Services.AddControllers()
     .AddJsonOptions(options => {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());

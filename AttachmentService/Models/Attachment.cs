@@ -5,6 +5,10 @@ namespace AttachmentService.Models
     public class Attachment : EntityBaseDomain
     {
         [JsonIgnore]
+        public Guid? AssetGuid { get; set; }
+        [JsonIgnore]
+        public Guid? UserGuid { get; set; }
+        [JsonIgnore]
         public Guid BuildingGuid { get; set; }
         [JsonIgnore]
         public Guid? WorkOrderGuid { get; set; }

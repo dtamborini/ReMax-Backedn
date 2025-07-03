@@ -3,6 +3,7 @@ using System;
 using AttachmentService.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AttachmentService.Migrations
 {
     [DbContext(typeof(AttachmentDbContext))]
-    partial class AttachmentDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250702153821_AddedUserAssetReference")]
+    partial class AddedUserAssetReference
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
