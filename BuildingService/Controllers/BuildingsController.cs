@@ -1,9 +1,9 @@
 ﻿using BuildingService.Clients;
 using BuildingService.Enums;
+using BuildingService.Interfaces;
 using BuildingService.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace BuildingService.Controllers
 {
@@ -12,48 +12,168 @@ namespace BuildingService.Controllers
     [Authorize]
     public class BuildingsController : ControllerBase
     {
+        private readonly UserClaimService _userClaimService;
+        private readonly IBuildingFactoryService _buildingFactoryService;
         private readonly IMappingServiceHttpClient _mappingServiceHttpClient;
         private readonly IBuildingDataProviderClient _buildingDataProviderClient;
 
         public BuildingsController(
+            UserClaimService userClaimService,
+            IBuildingFactoryService buildingFactoryService,
             IMappingServiceHttpClient mappingServiceHttpClient,
             IBuildingDataProviderClient buildingDataProviderClient
             )
         {
+            _userClaimService = userClaimService;
+            _buildingFactoryService = buildingFactoryService;
             _mappingServiceHttpClient = mappingServiceHttpClient;
             _buildingDataProviderClient = buildingDataProviderClient;
         }
 
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<IEnumerable<BuildingDto>>> GetBuildings()
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Building>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorDao))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorDao))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorDao))]
+        public async Task<ActionResult<IEnumerable<Building>>> GetBuildings()
         {
-            var buildings = await _buildingDataProviderClient.GetBuildingsAsync();
+            var buildingDtos = await _buildingDataProviderClient.GetBuildingsAsync();
 
-            if (buildings == null)
+            if (buildingDtos == null)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    "Impossibile recuperare i dati dei Building dal servizio dati esterno.");
+                var errorResponse = new ErrorDao
+                {
+                    Titles = new List<LocalizedTitle>
+                {
+                    new LocalizedTitle
+                    {
+                        Culture = "en-US",
+                        Value = "No building data available from external provider or data could not be retrieved."
+                    },
+                    new LocalizedTitle
+                    {
+                        Culture = "it-IT",
+                        Value = "Nessun dato di edificio disponibile dal provider esterno o i dati non sono stati recuperati."
+                    },
+                }
+                };
+                return BadRequest(errorResponse);
             }
 
-             //Mapping
+            //Mapping
+            var buildingMappings = await _mappingServiceHttpClient.GetMappingsWithOptionalParameters(isActive: true, entityType: EntityType.Building);
+            var entityMapping = buildingMappings.FirstOrDefault();
 
-            return Ok(buildings);
+            if (entityMapping == null)
+            {
+                var errorResponse = new ErrorDao
+                {
+                    Titles = new List<LocalizedTitle>
+                {
+                    new LocalizedTitle { Culture = "en-US", Value = "No active 'Building' mapping found. Cannot process data." },
+                    new LocalizedTitle { Culture = "it-IT", Value = "Nessun mapping 'Building' attivo trovato. Impossibile processare i dati." }
+                }
+                };
+                return NotFound(errorResponse);
+            }
+
+            //User
+            Guid? userUuid = _userClaimService.GetUserGuidFromPrincipal(User);
+            if (userUuid == null)
+            {
+                var errorResponse = new ErrorDao
+                {
+                    Titles = new List<LocalizedTitle>
+                {
+                    new LocalizedTitle { Culture = "en-US", Value = "Unable to determine user from authentication token or invalid token." },
+                    new LocalizedTitle { Culture = "it-IT", Value = "Impossibile determinare l'utente dal token di autenticazione o token non valido." }
+                }
+                };
+                return Unauthorized(errorResponse);
+            }
+
+            // --- Mappatura di ogni BuildingDto nella lista ---
+            var mappedBuildings = new List<Building>();
+            foreach (var buildingDto in buildingDtos)
+            {
+                try
+                {
+                    var mappedBuilding = _buildingFactoryService.MapBuildingDto(
+                        buildingDto, entityMapping, (Guid)userUuid
+                    );
+                    mappedBuildings.Add(mappedBuilding);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Errore durante la mappatura di un edificio: {ex.Message}");
+                }
+            }
+
+            if (!mappedBuildings.Any() && buildingDtos.Any())
+            {
+                var errorResponse = new ErrorDao
+                {
+                    Titles = new List<LocalizedTitle>
+                {
+                    new LocalizedTitle { Culture = "en-US", Value = "Failed to map any building data after retrieval." },
+                    new LocalizedTitle { Culture = "it-IT", Value = "Nessun dato di edificio mappato con successo dopo il recupero." }
+                }
+                };
+                return StatusCode(StatusCodes.Status500InternalServerError, errorResponse);
+            }
+
+            return Ok(mappedBuildings);
         }
 
         [HttpGet("{guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<BuildingDto>> GetBuilding(Guid guid)
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorDao))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ErrorDao))]
+        public async Task<ActionResult<Building>> GetBuilding(Guid guid)
         {
-            var building = await _buildingDataProviderClient.GetBuildingByIdAsync(guid);
+            var buildingDto = await _buildingDataProviderClient.GetBuildingByIdAsync(guid);
 
-            if (building == null)
+            if (buildingDto == null)
             {
-                return NotFound($"Building con GUID '{guid}' non trovato nel servizio dati esterno.");
+                var errorResponse = new ErrorDao
+                {
+                    Titles = new List<LocalizedTitle>
+                    {
+                        new LocalizedTitle
+                        {
+                            Culture = "en-US",
+                            Value = $"Cannot find a valid Building with GUID:'{guid}' in external provider."
+                        },
+                        new LocalizedTitle
+                        {
+                            Culture = "it-IT",
+                            Value = $"Building con GUID:'{guid}' non trovato nel servizio dati esterno"
+                        },
+                    }
+                };
+                return NotFound(errorResponse);
             }
+
+            //Mapping
+            var attachmentMapping = await _mappingServiceHttpClient.GetMappingsWithOptionalParameters(isActive: true, entityType: EntityType.Building);
+            var entityMapping = attachmentMapping.FirstOrDefault();
+
+            if (entityMapping == null)
+            {
+                return NotFound("Nessun 'Attachment' mapping attivo trovato. Impossibile procedere con l'upload.");
+            }
+
+            //User
+            Guid? userUuid = _userClaimService.GetUserGuidFromPrincipal(User);
+            if (userUuid == null)
+            {
+                return Unauthorized("Impossibile determinare l'utente dal token di autenticazione o token non valido.");
+            }
+
+            var building = _buildingFactoryService.MapBuildingDto(
+                buildingDto, entityMapping, (Guid) userUuid
+
+            );
 
             return Ok(building);
         }
@@ -89,26 +209,6 @@ namespace BuildingService.Controllers
                 Value = building.Guid.ToString()
             });
 
-            building.SerializeComplexData();
-
-            var buildingDtoToSend = new BuildingDto
-            {
-                Guid = building.Guid,
-                Name = building.Name,
-                Mapping = mapping.Guid,
-            };
-
-            var createdBuildingDto = await _buildingDataProviderClient.CreateBuildingAsync(buildingDtoToSend);
-
-            if (createdBuildingDto == null)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                                  "Errore durante la creazione del Building nel servizio dati esterno.");
-            }
-
-
-            building.DeserializeComplexData();
-
             return CreatedAtAction(nameof(GetBuilding), new { guid = building.Guid }, building);
         }
 
@@ -135,7 +235,14 @@ namespace BuildingService.Controllers
             {
                 Guid = building.Guid,
                 Name = building.Name,
-                Mapping = building.Mapping,
+                Address = "Address",
+                TelephoneNumber = "TelephoneNumber",
+                Emails = new BuildingEmailDto
+                {
+                    Email = "Email",
+                    Pec = "P.E.C.",
+                },
+                Cf = "CF",
             };
 
             var success = await _buildingDataProviderClient.UpdateBuildingAsync(guid, buildingDtoToSend);

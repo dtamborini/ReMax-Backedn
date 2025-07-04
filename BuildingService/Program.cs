@@ -1,5 +1,7 @@
 using BuildingService.Clients;
 using BuildingService.Handler;
+using BuildingService.Interfaces;
+using BuildingService.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
@@ -22,6 +24,9 @@ if (string.IsNullOrEmpty(jwtValidationSecretKey) || string.IsNullOrEmpty(signing
 }
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<UserClaimService>();
+builder.Services.AddScoped<IBuildingFactoryService, BuildingFactoryService>();
+
 builder.Services.AddHttpClient<IMappingServiceHttpClient, MappingServiceHttpClient>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["MappingService:BaseUrl"]!);

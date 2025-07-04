@@ -9,9 +9,8 @@ namespace BuildingService.Models
         public required PropertyType Type { get; init; }
         public List<LocalizedTitle> Title { get; init; } = new List<LocalizedTitle>();
         public dynamic? Attributes { get; init; }
-        public string? Value { get; set; }
+        public dynamic? Value { get; set; }
         public List<EntityProperty>? Properties { get; set; }
         public List<EntityDate>? Dates { get; set; }
-        public required string MappingHash { get; init; }
     }
 }
