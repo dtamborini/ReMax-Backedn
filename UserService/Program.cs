@@ -209,12 +209,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 // --- Configurazione Servizi di Autorizzazione ---
-builder.Services.AddAuthorization(options =>
-{
-    options.FallbackPolicy = new AuthorizationPolicyBuilder()
-        .RequireAuthenticatedUser()
-        .Build();
-});
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
