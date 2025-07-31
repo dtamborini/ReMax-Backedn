@@ -11,7 +11,7 @@
         "projectName": "OAuth2MockServer",
         "projectPath": "C:\\Users\\david\\Documents\\REMAX\\RemaxApi\\OAuth2MockServer\\OAuth2MockServer.csproj",
         "packagesPath": "C:\\Users\\david\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\david\\Documents\\REMAX\\ReMaxApi\\OAuth2MockServer\\obj\\",
+        "outputPath": "C:\\Users\\david\\Documents\\REMAX\\RemaxApi\\OAuth2MockServer\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

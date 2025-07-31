@@ -3,6 +3,7 @@ using AttachmentService.Data;
 using AttachmentService.Handler;
 using AttachmentService.Interfaces;
 using AttachmentService.Services;
+using RemaxApi.Shared.Authentication.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -39,8 +40,11 @@ builder.Services.AddScoped<UserClaimService>();
 builder.Services.AddScoped<IEntityPropertyPatchService, EntityPropertyPatchService>();
 builder.Services.AddScoped<IAttachmentPatchService, AttachmentPatchService>();
 
-
+// Registra HttpContextAccessor necessario per i servizi JWT
 builder.Services.AddHttpContextAccessor();
+
+// Registra i servizi JWT condivisi
+builder.Services.AddExternalJwtAuthentication();
 builder.Services.AddHttpClient<IMappingServiceHttpClient, MappingServiceHttpClient>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["MappingService:BaseUrl"]!);
@@ -94,23 +98,15 @@ builder.Services.AddSwaggerGen(options =>
         throw new InvalidOperationException("OAuth AuthorizationUrl or TokenEndpoint not configured for Swagger.");
     }
 
-    options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+    // JWT Bearer Token configuration for Swagger
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Type = SecuritySchemeType.OAuth2,
-        Flows = new OpenApiOAuthFlows
-        {
-            AuthorizationCode = new OpenApiOAuthFlow
-            {
-                AuthorizationUrl = new Uri(authorizationUrl, UriKind.Absolute),
-                TokenUrl = new Uri(tokenUrl, UriKind.Absolute),
-                Scopes = swaggerScopes?.ToDictionary(s => s, s => $"Access to {s}") ?? new Dictionary<string, string>(),
-                Extensions = new Dictionary<string, IOpenApiExtension>
-                {
-                    { "x-use-pkce", new OpenApiBoolean(true) }
-                }
-            }
-        },
-        Description = "Autenticazione OAuth 2.0 tramite il tuo Identity Provider esterno."
+        Description = "JWT Authorization header usando Bearer scheme. Esempio: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT"
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -121,10 +117,10 @@ builder.Services.AddSwaggerGen(options =>
                 Reference = new OpenApiReference
                 {
                     Type = ReferenceType.SecurityScheme,
-                    Id = "oauth2"
+                    Id = "Bearer"
                 }
             },
-            swaggerScopes ?? new string[] {}
+            new string[] {}
         }
     });
 });
@@ -220,27 +216,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(options =>
     {
-        var useMockOAuth = builder.Configuration.GetValue<bool>("Authentication:UseMockOAuth");
-
-        string? swaggerClientId;
-        string[]? swaggerScopes;
-
-        if (useMockOAuth)
-        {
-            swaggerClientId = builder.Configuration["MockOAuthSettings:SwaggerClientId"];
-            swaggerScopes = builder.Configuration.GetSection("MockOAuthSettings:SwaggerScopes").Get<string[]>();
-        }
-        else
-        {
-            swaggerClientId = builder.Configuration["OAuthSettings:SwaggerClientId"];
-            swaggerScopes = builder.Configuration.GetSection("OAuthSettings:SwaggerScopes").Get<string[]>();
-        }
-
-        options.OAuthClientId(swaggerClientId);
-        options.OAuthScopes(swaggerScopes ?? new string[] { });
-        options.OAuthUsePkce();
-        options.OAuthAppName("WorkSheetService Swagger UI");
-        options.OAuthUseBasicAuthenticationWithAccessCodeGrant();
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "AttachmentService API v1");
+        options.DocumentTitle = "AttachmentService API - Swagger UI";
     });
 }
 
@@ -262,6 +239,8 @@ using (var scope = app.Services.CreateScope())
 
 app.UseRouting();
 
+// Usa il middleware JWT condiviso
+app.UseExternalJwtValidation();
 app.UseAuthentication();
 app.UseAuthorization();
 

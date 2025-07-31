@@ -274,10 +274,13 @@ C:\Users\david\Documents\REMAX\RemaxApi\BuildingService\obj\Debug\net8.0\staticw
 C:\Users\david\Documents\REMAX\RemaxApi\BuildingService\obj\Debug\net8.0\staticwebassets.build.json.cache
 C:\Users\david\Documents\REMAX\RemaxApi\BuildingService\obj\Debug\net8.0\staticwebassets.development.json
 C:\Users\david\Documents\REMAX\RemaxApi\BuildingService\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-C:\Users\david\Documents\REMAX\RemaxApi\BuildingService\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 C:\Users\david\Documents\REMAX\RemaxApi\BuildingService\obj\Debug\net8.0\Building.3870B678.Up2Date
 C:\Users\david\Documents\REMAX\RemaxApi\BuildingService\obj\Debug\net8.0\BuildingService.dll
 C:\Users\david\Documents\REMAX\RemaxApi\BuildingService\obj\Debug\net8.0\refint\BuildingService.dll
 C:\Users\david\Documents\REMAX\RemaxApi\BuildingService\obj\Debug\net8.0\BuildingService.pdb
 C:\Users\david\Documents\REMAX\RemaxApi\BuildingService\obj\Debug\net8.0\BuildingService.genruntimeconfig.cache
 C:\Users\david\Documents\REMAX\RemaxApi\BuildingService\obj\Debug\net8.0\ref\BuildingService.dll
+C:\Users\david\Documents\REMAX\RemaxApi\BuildingService\bin\Debug\net8.0\Resources\schema_building.json
+C:\Users\david\Documents\REMAX\RemaxApi\BuildingService\bin\Debug\net8.0\Resources\schema_buildings.json
+C:\Users\david\Documents\REMAX\RemaxApi\BuildingService\bin\Debug\net8.0\RemaxApi.Shared.Authentication.dll
+C:\Users\david\Documents\REMAX\RemaxApi\BuildingService\bin\Debug\net8.0\RemaxApi.Shared.Authentication.pdb

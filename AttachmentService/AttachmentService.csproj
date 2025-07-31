@@ -21,4 +21,8 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.12.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\RemaxApi.Shared.Authentication\RemaxApi.Shared.Authentication.csproj" />
+  </ItemGroup>
+
 </Project>

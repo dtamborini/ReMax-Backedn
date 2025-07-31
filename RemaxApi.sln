@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetService", "AssetServic
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AttachmentService", "AttachmentService\AttachmentService.csproj", "{67E5FDDB-F041-44D9-A975-B114117B7CB5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemaxApi.Shared.Authentication", "Shared\RemaxApi.Shared.Authentication\RemaxApi.Shared.Authentication.csproj", "{8C9ED794-4F35-4F5E-9A5A-B2D7F89E3C5D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +77,10 @@ Global
 		{67E5FDDB-F041-44D9-A975-B114117B7CB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{67E5FDDB-F041-44D9-A975-B114117B7CB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{67E5FDDB-F041-44D9-A975-B114117B7CB5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C9ED794-4F35-4F5E-9A5A-B2D7F89E3C5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C9ED794-4F35-4F5E-9A5A-B2D7F89E3C5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C9ED794-4F35-4F5E-9A5A-B2D7F89E3C5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C9ED794-4F35-4F5E-9A5A-B2D7F89E3C5D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

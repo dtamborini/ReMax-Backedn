@@ -9,6 +9,7 @@ using Microsoft.OpenApi.Models;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
+using RemaxApi.Shared.Authentication.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,9 @@ if (string.IsNullOrEmpty(jwtValidationSecretKey) || string.IsNullOrEmpty(signing
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<UserClaimService>();
 builder.Services.AddScoped<IBuildingFactoryService, BuildingFactoryService>();
+
+// Registra i servizi JWT condivisi
+builder.Services.AddExternalJwtAuthentication();
 
 builder.Services.AddHttpClient<IMappingServiceHttpClient, MappingServiceHttpClient>(client =>
 {
@@ -83,19 +87,15 @@ builder.Services.AddSwaggerGen(options =>
         throw new InvalidOperationException("OAuth AuthorizationUrl or TokenEndpoint not configured for Swagger.");
     }
 
-    options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+    // JWT Bearer Token configuration for Swagger
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Type = SecuritySchemeType.OAuth2,
-        Flows = new OpenApiOAuthFlows
-        {
-            AuthorizationCode = new OpenApiOAuthFlow
-            {
-                AuthorizationUrl = new Uri(authorizationUrl, UriKind.Absolute),
-                TokenUrl = new Uri(tokenUrl, UriKind.Absolute),
-                Scopes = swaggerScopes?.ToDictionary(s => s, s => $"Access to {s}") ?? new Dictionary<string, string>()
-            }
-        },
-        Description = "Autenticazione OAuth 2.0 tramite il tuo Identity Provider esterno."
+        Description = "JWT Authorization header usando Bearer scheme. Esempio: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT"
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -106,10 +106,10 @@ builder.Services.AddSwaggerGen(options =>
                 Reference = new OpenApiReference
                 {
                     Type = ReferenceType.SecurityScheme,
-                    Id = "oauth2"
+                    Id = "Bearer"
                 }
             },
-            swaggerScopes ?? new string[] {}
+            new string[] {}
         }
     });
 });
@@ -203,6 +203,8 @@ if (app.Environment.IsDevelopment())
     {
         var useMockOAuth = builder.Configuration.GetValue<bool>("Authentication:UseMockOAuth");
 
+        string? authorizationUrl;
+        string? tokenUrl;
         string? swaggerClientId;
         string[]? swaggerScopes;
 
@@ -210,11 +212,15 @@ if (app.Environment.IsDevelopment())
         {
             swaggerClientId = builder.Configuration["MockOAuthSettings:SwaggerClientId"];
             swaggerScopes = builder.Configuration.GetSection("MockOAuthSettings:SwaggerScopes").Get<string[]>();
+            authorizationUrl = builder.Configuration["OAuthSettings:AuthorizationUrl"];
+            tokenUrl = builder.Configuration["OAuthSettings:TokenUrl"];
         }
         else
         {
             swaggerClientId = builder.Configuration["OAuthSettings:SwaggerClientId"];
             swaggerScopes = builder.Configuration.GetSection("OAuthSettings:SwaggerScopes").Get<string[]>();
+            authorizationUrl = builder.Configuration["OAuthSettings:AuthorizationUrl"];
+            tokenUrl = builder.Configuration["OAuthSettings:TokenUrl"];
         }
 
         options.OAuthClientId(swaggerClientId);
@@ -225,6 +231,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.UseExternalJwtValidation();
 app.UseAuthentication();
 app.UseAuthorization();
 

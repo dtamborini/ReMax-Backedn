@@ -1,0 +1,13 @@
+C:\Users\david\Documents\REMAX\ReMaxApi\Shared\RemaxApi.Shared.Authentication\obj\Debug\net8.0\RemaxApi.Shared.Authentication.csproj.AssemblyReference.cache
+C:\Users\david\Documents\REMAX\ReMaxApi\Shared\RemaxApi.Shared.Authentication\obj\Debug\net8.0\RemaxApi.Shared.Authentication.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\david\Documents\REMAX\ReMaxApi\Shared\RemaxApi.Shared.Authentication\obj\Debug\net8.0\RemaxApi.Shared.Authentication.AssemblyInfoInputs.cache
+C:\Users\david\Documents\REMAX\ReMaxApi\Shared\RemaxApi.Shared.Authentication\obj\Debug\net8.0\RemaxApi.Shared.Authentication.AssemblyInfo.cs
+C:\Users\david\Documents\REMAX\ReMaxApi\Shared\RemaxApi.Shared.Authentication\obj\Debug\net8.0\RemaxApi.Shared.Authentication.csproj.CoreCompileInputs.cache
+C:\Users\david\Documents\REMAX\ReMaxApi\Shared\RemaxApi.Shared.Authentication\obj\Debug\net8.0\RemaxApi.Shared.Authentication.sourcelink.json
+C:\Users\david\Documents\REMAX\ReMaxApi\Shared\RemaxApi.Shared.Authentication\bin\Debug\net8.0\RemaxApi.Shared.Authentication.deps.json
+C:\Users\david\Documents\REMAX\ReMaxApi\Shared\RemaxApi.Shared.Authentication\bin\Debug\net8.0\RemaxApi.Shared.Authentication.dll
+C:\Users\david\Documents\REMAX\ReMaxApi\Shared\RemaxApi.Shared.Authentication\bin\Debug\net8.0\RemaxApi.Shared.Authentication.pdb
+C:\Users\david\Documents\REMAX\ReMaxApi\Shared\RemaxApi.Shared.Authentication\obj\Debug\net8.0\RemaxApi.Shared.Authentication.dll
+C:\Users\david\Documents\REMAX\ReMaxApi\Shared\RemaxApi.Shared.Authentication\obj\Debug\net8.0\refint\RemaxApi.Shared.Authentication.dll
+C:\Users\david\Documents\REMAX\ReMaxApi\Shared\RemaxApi.Shared.Authentication\obj\Debug\net8.0\RemaxApi.Shared.Authentication.pdb
+C:\Users\david\Documents\REMAX\ReMaxApi\Shared\RemaxApi.Shared.Authentication\obj\Debug\net8.0\ref\RemaxApi.Shared.Authentication.dll

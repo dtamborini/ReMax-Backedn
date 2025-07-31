@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RfqService")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+658efbfd375b1254cfa4202c6afd35c1a8597f97")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5bdeb34bb2f7cc0e0e2b08a2d1f42ef2950897d1")]
 [assembly: System.Reflection.AssemblyProductAttribute("RfqService")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RfqService")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

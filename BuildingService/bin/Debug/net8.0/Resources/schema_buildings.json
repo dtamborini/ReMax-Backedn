@@ -1,0 +1,13 @@
+{
+	"spawn(10)": {
+		"guid": "crypt.uuid",
+		"name": "custom.format(COND-####%A%A##)",
+		"address": "address",
+		"telephoneNumber": "phone.mobile",
+		"emails": {
+			"email": "user.email",
+			"pec": "user.email"
+		},
+		"cf": "custom.format(CF%A%A%A%A#######)"
+	}
+}

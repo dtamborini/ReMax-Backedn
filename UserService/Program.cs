@@ -56,6 +56,11 @@ builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
     }
 });
 
+// Servizi per l'autenticazione JWT esterna
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+builder.Services.AddScoped<IMockUserService, MockUserService>();
+builder.Services.AddScoped<IExternalAuthService, ExternalAuthService>();
+
 
 builder.Services.AddControllers()
     .AddJsonOptions(options => {

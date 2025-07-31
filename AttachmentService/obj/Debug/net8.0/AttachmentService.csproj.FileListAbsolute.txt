@@ -133,10 +133,12 @@ C:\Users\david\Documents\REMAX\ReMaxApi\AttachmentService\obj\Debug\net8.0\stati
 C:\Users\david\Documents\REMAX\ReMaxApi\AttachmentService\obj\Debug\net8.0\staticwebassets.build.json.cache
 C:\Users\david\Documents\REMAX\ReMaxApi\AttachmentService\obj\Debug\net8.0\staticwebassets.development.json
 C:\Users\david\Documents\REMAX\ReMaxApi\AttachmentService\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-C:\Users\david\Documents\REMAX\ReMaxApi\AttachmentService\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 C:\Users\david\Documents\REMAX\ReMaxApi\AttachmentService\obj\Debug\net8.0\Attachme.7ED7A3CD.Up2Date
 C:\Users\david\Documents\REMAX\ReMaxApi\AttachmentService\obj\Debug\net8.0\AttachmentService.dll
 C:\Users\david\Documents\REMAX\ReMaxApi\AttachmentService\obj\Debug\net8.0\refint\AttachmentService.dll
 C:\Users\david\Documents\REMAX\ReMaxApi\AttachmentService\obj\Debug\net8.0\AttachmentService.pdb
 C:\Users\david\Documents\REMAX\ReMaxApi\AttachmentService\obj\Debug\net8.0\AttachmentService.genruntimeconfig.cache
 C:\Users\david\Documents\REMAX\ReMaxApi\AttachmentService\obj\Debug\net8.0\ref\AttachmentService.dll
+C:\Users\david\Documents\REMAX\ReMaxApi\AttachmentService\bin\Debug\net8.0\RemaxApi.Shared.Authentication.dll
+C:\Users\david\Documents\REMAX\ReMaxApi\AttachmentService\bin\Debug\net8.0\RemaxApi.Shared.Authentication.pdb
+C:\Users\david\Documents\REMAX\ReMaxApi\AttachmentService\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

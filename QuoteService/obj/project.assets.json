@@ -3767,11 +3767,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\david\\Documents\\REMAX\\ReMaxApi\\QuoteService\\QuoteService.csproj",
+      "projectUniqueName": "C:\\Users\\david\\Documents\\REMAX\\RemaxApi\\QuoteService\\QuoteService.csproj",
       "projectName": "QuoteService",
-      "projectPath": "C:\\Users\\david\\Documents\\REMAX\\ReMaxApi\\QuoteService\\QuoteService.csproj",
+      "projectPath": "C:\\Users\\david\\Documents\\REMAX\\RemaxApi\\QuoteService\\QuoteService.csproj",
       "packagesPath": "C:\\Users\\david\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\david\\Documents\\REMAX\\ReMaxApi\\QuoteService\\obj\\",
+      "outputPath": "C:\\Users\\david\\Documents\\REMAX\\RemaxApi\\QuoteService\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

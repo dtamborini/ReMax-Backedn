@@ -4,6 +4,7 @@ using BuildingService.Interfaces;
 using BuildingService.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RemaxApi.Shared.Authentication.Services;
 
 namespace BuildingService.Controllers
 {
@@ -16,21 +17,26 @@ namespace BuildingService.Controllers
         private readonly IBuildingFactoryService _buildingFactoryService;
         private readonly IMappingServiceHttpClient _mappingServiceHttpClient;
         private readonly IBuildingDataProviderClient _buildingDataProviderClient;
+        private readonly IExternalAuthUserService _userService;
 
         public BuildingsController(
             UserClaimService userClaimService,
             IBuildingFactoryService buildingFactoryService,
             IMappingServiceHttpClient mappingServiceHttpClient,
-            IBuildingDataProviderClient buildingDataProviderClient
+            IBuildingDataProviderClient buildingDataProviderClient,
+            IExternalAuthUserService userService
             )
         {
             _userClaimService = userClaimService;
             _buildingFactoryService = buildingFactoryService;
             _mappingServiceHttpClient = mappingServiceHttpClient;
             _buildingDataProviderClient = buildingDataProviderClient;
+            _userService = userService;
+            
         }
 
         [HttpGet]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Building>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorDao))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorDao))]
@@ -122,7 +128,19 @@ namespace BuildingService.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, errorResponse);
             }
 
-            return Ok(mappedBuildings);
+            return Ok(new 
+            {
+                data = mappedBuildings,
+                userInfo = new 
+                {
+                    userId = _userService.GetUserId(),
+                    userName = _userService.GetUserName(),
+                    userEmail = _userService.GetUserEmail(),
+                    userRoles = _userService.GetUserRoles(),
+                    isAuthenticated = _userService.IsAuthenticated()
+                },
+                timestamp = DateTime.UtcNow
+            });
         }
 
         [HttpGet("{guid}")]
@@ -175,7 +193,19 @@ namespace BuildingService.Controllers
 
             );
 
-            return Ok(building);
+            return Ok(new 
+            {
+                data = building,
+                userInfo = new 
+                {
+                    userId = _userService.GetUserId(),
+                    userName = _userService.GetUserName(),
+                    userEmail = _userService.GetUserEmail(),
+                    userRoles = _userService.GetUserRoles(),
+                    isAuthenticated = _userService.IsAuthenticated()
+                },
+                timestamp = DateTime.UtcNow
+            });
         }
 
         [HttpPost]
@@ -209,7 +239,19 @@ namespace BuildingService.Controllers
                 Value = building.Guid.ToString()
             });
 
-            return CreatedAtAction(nameof(GetBuilding), new { guid = building.Guid }, building);
+            return CreatedAtAction(nameof(GetBuilding), new { guid = building.Guid }, new 
+            {
+                data = building,
+                userInfo = new 
+                {
+                    userId = _userService.GetUserId(),
+                    userName = _userService.GetUserName(),
+                    userEmail = _userService.GetUserEmail(),
+                    userRoles = _userService.GetUserRoles(),
+                    isAuthenticated = _userService.IsAuthenticated()
+                },
+                timestamp = DateTime.UtcNow
+            });
         }
 
         [HttpPut("{guid}")]

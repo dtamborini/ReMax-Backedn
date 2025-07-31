@@ -2,10 +2,12 @@
 using AttachmentService.Data;
 using AttachmentService.Enums;
 using AttachmentService.Models;
+using AttachmentService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AttachmentService.Interfaces;
+using RemaxApi.Shared.Authentication.Services;
 
 namespace AttachmentService.Controllers
 {
@@ -15,6 +17,7 @@ namespace AttachmentService.Controllers
     public class AttachmentsController : ControllerBase
     {
         private readonly UserClaimService _userClaimService;
+        private readonly IExternalAuthUserService _externalAuthUserService;
         private readonly AttachmentDbContext _context;
         private readonly IMappingServiceHttpClient _mappingServiceHttpClient;
         private readonly IAttachmentFactoryService _attachmentFactoryService;
@@ -23,6 +26,7 @@ namespace AttachmentService.Controllers
 
         public AttachmentsController(
             UserClaimService userClaimService,
+            IExternalAuthUserService externalAuthUserService,
             AttachmentDbContext context,
             IAttachmentFactoryService attachmentFactoryService,
             IMappingServiceHttpClient mappingServiceHttpClient,
@@ -32,6 +36,7 @@ namespace AttachmentService.Controllers
         {
             _context = context;
             _userClaimService = userClaimService;
+            _externalAuthUserService = externalAuthUserService;
             _mappingServiceHttpClient = mappingServiceHttpClient;
             _attachmentFactoryService = attachmentFactoryService;
             _entityPropertyPatchService = entityPropertyPatchService;
@@ -40,18 +45,31 @@ namespace AttachmentService.Controllers
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<Attachment>>> GetAttachments()
+        public async Task<ActionResult<object>> GetAttachments()
         {
             var attachments = await _context.Attachments.ToListAsync();
 
             attachments.ForEach(b => b.DeserializeComplexData());
-            return Ok(attachments);
+            
+            return Ok(new 
+            {
+                data = attachments,
+                userInfo = new 
+                {
+                    userId = _externalAuthUserService.GetUserId(),
+                    userName = _externalAuthUserService.GetUserName(),
+                    userEmail = _externalAuthUserService.GetUserEmail(),
+                    userRoles = _externalAuthUserService.GetUserRoles(),
+                    isAuthenticated = _externalAuthUserService.IsAuthenticated()
+                },
+                timestamp = DateTime.UtcNow
+            });
         }
 
         [HttpGet("{guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Attachment>> GetAttachment(Guid guid)
+        public async Task<ActionResult<object>> GetAttachment(Guid guid)
         {
             var attachment = await _context.Attachments.FindAsync(guid);
 
@@ -61,7 +79,20 @@ namespace AttachmentService.Controllers
             }
 
             attachment.DeserializeComplexData();
-            return Ok(attachment);
+            
+            return Ok(new 
+            {
+                data = attachment,
+                userInfo = new 
+                {
+                    userId = _externalAuthUserService.GetUserId(),
+                    userName = _externalAuthUserService.GetUserName(),
+                    userEmail = _externalAuthUserService.GetUserEmail(),
+                    userRoles = _externalAuthUserService.GetUserRoles(),
+                    isAuthenticated = _externalAuthUserService.IsAuthenticated()
+                },
+                timestamp = DateTime.UtcNow
+            });
         }
 
         [HttpPatch("{guid}")]
