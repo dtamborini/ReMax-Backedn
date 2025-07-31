@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\david\\Documents\\REMAX\\RemaxApi\\UserService\\UserService.csproj": {}
+    "C:\\Users\\david\\Documents\\REMAX\\ReMaxApi\\UserService\\UserService.csproj": {}
   },
   "projects": {
-    "C:\\Users\\david\\Documents\\REMAX\\RemaxApi\\UserService\\UserService.csproj": {
+    "C:\\Users\\david\\Documents\\REMAX\\ReMaxApi\\UserService\\UserService.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\david\\Documents\\REMAX\\RemaxApi\\UserService\\UserService.csproj",
+        "projectUniqueName": "C:\\Users\\david\\Documents\\REMAX\\ReMaxApi\\UserService\\UserService.csproj",
         "projectName": "UserService",
-        "projectPath": "C:\\Users\\david\\Documents\\REMAX\\RemaxApi\\UserService\\UserService.csproj",
+        "projectPath": "C:\\Users\\david\\Documents\\REMAX\\ReMaxApi\\UserService\\UserService.csproj",
         "packagesPath": "C:\\Users\\david\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\david\\Documents\\REMAX\\RemaxApi\\UserService\\obj\\",
+        "outputPath": "C:\\Users\\david\\Documents\\REMAX\\ReMaxApi\\UserService\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

@@ -3,7 +3,13 @@
     "allow": [
       "Bash(dotnet build)",
       "Bash(rm:*)",
-      "Bash(dotnet build:*)"
+      "Bash(dotnet build:*)",
+      "Bash(taskkill:*)",
+      "Bash(dotnet run:*)",
+      "Bash(powershell:*)",
+      "Bash(dotnet clean:*)",
+      "Bash(start dotnet run)",
+      "Bash(curl:*)"
     ],
     "deny": []
   }
