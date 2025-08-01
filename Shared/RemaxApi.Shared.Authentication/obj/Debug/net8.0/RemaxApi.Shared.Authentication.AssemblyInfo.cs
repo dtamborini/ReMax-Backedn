@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RemaxApi.Shared.Authentication")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5bdeb34bb2f7cc0e0e2b08a2d1f42ef2950897d1")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c7f5b2e6d0c3ebc9421387f7417faf565e2fb9b5")]
 [assembly: System.Reflection.AssemblyProductAttribute("RemaxApi.Shared.Authentication")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RemaxApi.Shared.Authentication")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

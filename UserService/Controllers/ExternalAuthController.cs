@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserService.Models.Auth;
 using UserService.Services;
+using System.Security.Claims;
 
 namespace UserService.Controllers
 {
@@ -56,87 +57,43 @@ namespace UserService.Controllers
             }
         }
 
-        [HttpPost("token")]
-        [AllowAnonymous]
-        public async Task<IActionResult> Token([FromForm] string grant_type, 
-                                             [FromForm] string username, 
-                                             [FromForm] string password,
-                                             [FromForm] string client_id,
-                                             [FromForm] string? client_secret)
+        [HttpGet("userinfo")]
+        [Authorize]
+        public async Task<IActionResult> GetUserInfo()
         {
-            if (grant_type != "password")
+            try
             {
-                return BadRequest(new { 
-                    error = "unsupported_grant_type",
-                    error_description = "Only 'password' grant type is supported" 
-                });
-            }
+                var userId = User.FindFirst("sub")?.Value ?? User.FindFirst("user_id")?.Value;
+                var username = User.FindFirst("username")?.Value ?? User.FindFirst("name")?.Value;
+                var email = User.FindFirst("email")?.Value;
+                var roles = User.FindAll("role").Select(c => c.Value).ToList();
 
-            var loginResult = await _externalAuthService.AuthenticateAsync(username, password, client_id, client_secret);
-
-            if (loginResult.IsSuccess)
-            {
-                return Ok(new 
-                { 
-                    access_token = loginResult.Token,
-                    token_type = "Bearer",
-                    expires_in = 86400
-                });
-            }
-            else
-            {
-                return BadRequest(new { 
-                    error = "invalid_grant",
-                    error_description = loginResult.ErrorMessage 
-                });
-            }
-        }
-
-        [HttpGet("users")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetUsers()
-        {
-            var users = await _mockUserService.GetAllUsersAsync();
-            var userList = users.Select(u => new
-            {
-                id = u.Id,
-                username = u.Username,
-                email = u.Email,
-                firstName = u.FirstName,
-                lastName = u.LastName,
-                roles = u.Roles,
-                isActive = u.IsActive
-            }).ToList();
-
-            return Ok(new { users = userList });
-        }
-
-        [HttpGet("test-tokens")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetTestTokens()
-        {
-            var users = await _mockUserService.GetAllUsersAsync();
-            var tokens = new List<object>();
-
-            foreach (var user in users.Take(3)) // Solo i primi 3 utenti
-            {
-                var loginResult = await _externalAuthService.AuthenticateAsync(user.Username, user.Password);
-                if (loginResult.IsSuccess)
+                if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(username))
                 {
-                    tokens.Add(new
-                    {
-                        username = user.Username,
-                        password = user.Password,
-                        roles = user.Roles,
-                        token = loginResult.Token
-                    });
+                    return Unauthorized(new { error = "invalid_token", error_description = "Token does not contain required user information" });
                 }
-            }
 
-            return Ok(new { 
-                message = "Test tokens generated for development/testing",
-                tokens = tokens 
-            });
+                var mockUser = await _mockUserService.GetUserByIdAsync(userId);
+                if (mockUser == null)
+                {
+                    return NotFound(new { error = "user_not_found", error_description = "User not found in the system" });
+                }
+
+                return Ok(new
+                {
+                    username = username,
+                    role = roles.FirstOrDefault() ?? mockUser.Role,
+                    first_name = mockUser.FirstName,
+                    last_name = mockUser.LastName,
+                    email = email ?? mockUser.Email,
+                    user_id = userId
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving user info");
+                return StatusCode(500, new { error = "server_error", error_description = "An error occurred while retrieving user information" });
+            }
         }
     }
 }

@@ -106,6 +106,7 @@ builder.Services.AddSwaggerGen(options =>
         throw new InvalidOperationException("OAuth AuthorizationUrl or TokenEndpoint not configured for Swagger.");
     }
 
+    // OAuth2 Security Scheme
     options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
     {
         Type = SecuritySchemeType.OAuth2,
@@ -121,6 +122,18 @@ builder.Services.AddSwaggerGen(options =>
         Description = "Autenticazione OAuth 2.0 tramite il tuo Identity Provider esterno."
     });
 
+    // JWT Bearer Security Scheme
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Name = "Authorization",
+        Description = "Inserisci il JWT Bearer token ottenuto da /api/ExternalAuth/login"
+    });
+
+    // OAuth2 Security Requirement
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -133,6 +146,22 @@ builder.Services.AddSwaggerGen(options =>
                 }
             },
             swaggerScopes ?? new string[] {}
+        }
+    });
+
+    // Bearer Token Security Requirement
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
         }
     });
 });
@@ -179,12 +208,12 @@ builder.Services.AddAuthentication(options =>
         options.SaveToken = true;
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,
+            ValidateIssuer = false, // Allow both mock OAuth and ExternalAuth tokens
             ValidIssuer = "http://localhost:7005",
-            ValidateAudience = true,
+            ValidateAudience = false, // Allow both mock OAuth and ExternalAuth tokens
             ValidAudience = "api1",
             ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero,
+            ClockSkew = TimeSpan.FromMinutes(5), // Allow some clock skew
 
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtValidationSecretKey))
@@ -192,6 +221,17 @@ builder.Services.AddAuthentication(options =>
                 KeyId = signingKeyId
             }
         };
+        
+        // Also validate ExternalAuth tokens with the same secret key
+        var externalAuthSecretKey = builder.Configuration["ExternalAuth:SecretKey"];
+        if (!string.IsNullOrEmpty(externalAuthSecretKey))
+        {
+            options.TokenValidationParameters.IssuerSigningKeys = new[]
+            {
+                new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtValidationSecretKey)) { KeyId = signingKeyId },
+                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(externalAuthSecretKey))
+            };
+        }
     }
     else
     {

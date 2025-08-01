@@ -9,7 +9,10 @@
       "Bash(powershell:*)",
       "Bash(dotnet clean:*)",
       "Bash(start dotnet run)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(docker-compose down:*)",
+      "Bash(docker-compose build:*)",
+      "Bash(docker-compose up:*)"
     ],
     "deny": []
   }

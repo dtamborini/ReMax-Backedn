@@ -4,6 +4,7 @@ namespace UserService.Services
     {
         Task<MockUser?> ValidateUserAsync(string username, string password);
         Task<List<MockUser>> GetAllUsersAsync();
+        Task<MockUser?> GetUserByIdAsync(string userId);
     }
 
     public class MockUser
@@ -12,7 +13,7 @@ namespace UserService.Services
         public string Username { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
-        public List<string> Roles { get; set; } = new();
+        public string Role { get; set; } = string.Empty;
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public bool IsActive { get; set; } = true;
@@ -29,7 +30,7 @@ namespace UserService.Services
                 Username = "admin",
                 Email = "admin@remax.com",
                 Password = "admin123",
-                Roles = new List<string> { "admin", "user" },
+                Role = "admin",
                 FirstName = "Mario",
                 LastName = "Rossi",
                 IsActive = true
@@ -37,10 +38,10 @@ namespace UserService.Services
             new MockUser
             {
                 Id = "user-002", 
-                Username = "manager",
-                Email = "manager@remax.com",
-                Password = "manager123",
-                Roles = new List<string> { "manager", "user" },
+                Username = "supplier",
+                Email = "supplier@remax.com",
+                Password = "supplier123",
+                Role = "supplier",
                 FirstName = "Luigi",
                 LastName = "Verdi",
                 IsActive = true
@@ -51,7 +52,7 @@ namespace UserService.Services
                 Username = "user",
                 Email = "user@remax.com", 
                 Password = "user123",
-                Roles = new List<string> { "user" },
+                Role = "condomino",
                 FirstName = "Giuseppe",
                 LastName = "Bianchi",
                 IsActive = true
@@ -62,7 +63,7 @@ namespace UserService.Services
                 Username = "testuser",
                 Email = "testuser@remax.com",
                 Password = "testpassword",
-                Roles = new List<string> { "user", "tester" },
+                Role = "condomino",
                 FirstName = "Test",
                 LastName = "User",
                 IsActive = true
@@ -99,6 +100,12 @@ namespace UserService.Services
         {
             await Task.Delay(50);
             return _users.Where(u => u.IsActive).ToList();
+        }
+
+        public async Task<MockUser?> GetUserByIdAsync(string userId)
+        {
+            await Task.Delay(50);
+            return _users.FirstOrDefault(u => u.Id == userId && u.IsActive);
         }
     }
 }
