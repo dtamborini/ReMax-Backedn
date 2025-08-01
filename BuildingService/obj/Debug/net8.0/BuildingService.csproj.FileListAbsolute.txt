@@ -284,4 +284,3 @@ C:\Users\david\Documents\REMAX\RemaxApi\BuildingService\bin\Debug\net8.0\Resourc
 C:\Users\david\Documents\REMAX\RemaxApi\BuildingService\bin\Debug\net8.0\Resources\schema_buildings.json
 C:\Users\david\Documents\REMAX\RemaxApi\BuildingService\bin\Debug\net8.0\RemaxApi.Shared.Authentication.dll
 C:\Users\david\Documents\REMAX\RemaxApi\BuildingService\bin\Debug\net8.0\RemaxApi.Shared.Authentication.pdb
-C:\Users\david\Documents\REMAX\RemaxApi\BuildingService\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

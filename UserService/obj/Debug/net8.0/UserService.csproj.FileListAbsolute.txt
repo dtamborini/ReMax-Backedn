@@ -143,3 +143,5 @@ C:\Users\david\Documents\REMAX\ReMaxApi\UserService\obj\Debug\net8.0\refint\User
 C:\Users\david\Documents\REMAX\ReMaxApi\UserService\obj\Debug\net8.0\UserService.pdb
 C:\Users\david\Documents\REMAX\ReMaxApi\UserService\obj\Debug\net8.0\UserService.genruntimeconfig.cache
 C:\Users\david\Documents\REMAX\ReMaxApi\UserService\obj\Debug\net8.0\ref\UserService.dll
+C:\Users\david\Documents\REMAX\RemaxApi\UserService\bin\Debug\net8.0\RemaxApi.Shared.Authentication.dll
+C:\Users\david\Documents\REMAX\RemaxApi\UserService\bin\Debug\net8.0\RemaxApi.Shared.Authentication.pdb

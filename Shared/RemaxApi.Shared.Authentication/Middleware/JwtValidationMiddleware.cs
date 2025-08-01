@@ -71,33 +71,42 @@ namespace RemaxApi.Shared.Authentication.Middleware
             {
                 var secretKey = _configuration["ExternalAuth:SecretKey"];
 
+                // Debug logging for production troubleshooting
+                _logger.LogInformation("JWT Middleware Validation - SecretKey present: {HasSecretKey}, Length: {SecretKeyLength}", 
+                    !string.IsNullOrEmpty(secretKey), 
+                    secretKey?.Length ?? 0);
+
                 if (string.IsNullOrEmpty(secretKey))
                 {
                     _logger.LogError("ExternalAuth:SecretKey not configured");
                     return null;
                 }
 
+                // Use the same validation parameters as Program.cs for consistency
                 var validationParameters = new TokenValidationParameters
                 {
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
                     ValidateIssuer = false,
-                    ValidateAudience = false,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
-                    ClockSkew = TimeSpan.FromMinutes(5)
+                    ValidateAudience = false, 
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.FromMinutes(5),
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
                 };
 
                 var principal = _tokenHandler.ValidateToken(token, validationParameters, out var validatedToken);
 
                 if (validatedToken is JwtSecurityToken jwtToken)
                 {
-                    _logger.LogDebug("Token validated successfully. Expires: {Expiry}", jwtToken.ValidTo);
+                    _logger.LogInformation("JWT Middleware - Token validated successfully. Expires: {Expiry}, User: {UserId}", 
+                        jwtToken.ValidTo, 
+                        principal.FindFirst("sub")?.Value ?? principal.FindFirst("user_id")?.Value ?? "unknown");
                     
                     LogTokenClaims(principal);
                     
                     return principal;
                 }
 
+                _logger.LogWarning("JWT Middleware - Token validation failed - not a valid JwtSecurityToken");
                 return null;
             }
             catch (SecurityTokenExpiredException ex)

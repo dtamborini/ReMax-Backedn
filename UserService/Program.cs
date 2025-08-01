@@ -9,6 +9,7 @@ using UserService.Clients;
 using UserService.Handler;
 using UserService.Models.DTOs;
 using UserService.Services;
+using RemaxApi.Shared.Authentication.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -295,6 +296,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthentication();
+
+// Add JWT validation middleware for ExternalAuth tokens
+app.UseMiddleware<JwtValidationMiddleware>();
+
 app.UseAuthorization();
 
 app.MapControllers();
