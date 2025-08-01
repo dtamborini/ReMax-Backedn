@@ -52,11 +52,6 @@ namespace UserService.Services
                 }
 
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-                
-                // Set the KeyId before creating credentials
-                var keyId = _configuration["ExternalAuth:KeyId"] ?? "my-mock-signing-key-id";
-                key.KeyId = keyId;
-                
                 var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
                 var tokenClaims = new List<Claim>();

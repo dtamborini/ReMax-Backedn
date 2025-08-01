@@ -206,31 +206,38 @@ builder.Services.AddAuthentication(options =>
     {
         options.RequireHttpsMetadata = false;
         options.SaveToken = true;
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = false, // Allow both mock OAuth and ExternalAuth tokens
-            ValidIssuer = "http://localhost:7005",
-            ValidateAudience = false, // Allow both mock OAuth and ExternalAuth tokens
-            ValidAudience = "api1",
-            ValidateLifetime = true,
-            ClockSkew = TimeSpan.FromMinutes(5), // Allow some clock skew
-
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtValidationSecretKey))
-            {
-                KeyId = signingKeyId
-            }
-        };
         
-        // Also validate ExternalAuth tokens with the same secret key
+        // Use only ExternalAuth configuration for simplicity
         var externalAuthSecretKey = builder.Configuration["ExternalAuth:SecretKey"];
+        
         if (!string.IsNullOrEmpty(externalAuthSecretKey))
         {
-            var externalAuthKeyId = builder.Configuration["ExternalAuth:KeyId"] ?? "my-mock-signing-key-id";
-            options.TokenValidationParameters.IssuerSigningKeys = new[]
+            options.TokenValidationParameters = new TokenValidationParameters
             {
-                new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtValidationSecretKey)) { KeyId = signingKeyId },
-                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(externalAuthSecretKey)) { KeyId = externalAuthKeyId }
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.FromMinutes(5),
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(externalAuthSecretKey))
+            };
+        }
+        else
+        {
+            // Fallback to original configuration
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = "http://localhost:7005",
+                ValidateAudience = true,
+                ValidAudience = "api1",
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtValidationSecretKey))
+                {
+                    KeyId = signingKeyId
+                }
             };
         }
     }
