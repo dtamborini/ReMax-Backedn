@@ -10,6 +10,7 @@ using System.Security.AccessControl;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
+using RemaxApi.Shared.Authentication.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -64,6 +65,7 @@ builder.Services.AddSwaggerGen(options =>
         throw new InvalidOperationException("OAuth AuthorizationUrl or TokenEndpoint not configured for Swagger.");
     }
 
+    // OAuth2 Security Scheme
     options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
     {
         Type = SecuritySchemeType.OAuth2,
@@ -79,6 +81,18 @@ builder.Services.AddSwaggerGen(options =>
         Description = "Autenticazione OAuth 2.0 tramite il tuo Identity Provider esterno."
     });
 
+    // JWT Bearer Security Scheme
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Name = "Authorization",
+        Description = "Inserisci il JWT Bearer token ottenuto da /api/ExternalAuth/login"
+    });
+
+    // OAuth2 Security Requirement
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -91,6 +105,22 @@ builder.Services.AddSwaggerGen(options =>
                 }
             },
             swaggerScopes ?? new string[] {}
+        }
+    });
+
+    // Bearer Token Security Requirement
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
         }
     });
 });
@@ -136,21 +166,43 @@ builder.Services.AddAuthentication(options =>
     {
         options.RequireHttpsMetadata = false;
         options.SaveToken = true;
-        options.TokenValidationParameters = new TokenValidationParameters
+        
+        // Use only ExternalAuth configuration for simplicity
+        var externalAuthSecretKey = builder.Configuration["ExternalAuth:SecretKey"];
+        
+        // Debug logging for production troubleshooting
+        Console.WriteLine($"JWT Validation - ExternalAuth:SecretKey present: {!string.IsNullOrEmpty(externalAuthSecretKey)}, Length: {externalAuthSecretKey?.Length ?? 0}");
+        
+        if (!string.IsNullOrEmpty(externalAuthSecretKey))
         {
-            ValidateIssuer = true,
-            ValidIssuer = "http://localhost:7005",
-            ValidateAudience = true,
-            ValidAudience = "api1",
-            ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero,
-
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtValidationSecretKey))
+            options.TokenValidationParameters = new TokenValidationParameters
             {
-                KeyId = signingKeyId
-            }
-        };
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.FromMinutes(5),
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(externalAuthSecretKey))
+            };
+        }
+        else
+        {
+            // Fallback to original configuration
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = "http://localhost:7005",
+                ValidateAudience = true,
+                ValidAudience = "api1",
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtValidationSecretKey))
+                {
+                    KeyId = signingKeyId
+                }
+            };
+        }
     }
     else
     {
@@ -211,13 +263,21 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-using (var scope = app.Services.CreateScope())
+// Database migration only in production/Docker environment
+if (!app.Environment.IsDevelopment())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<MappingDbContext>();
-    dbContext.Database.Migrate();
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<MappingDbContext>();
+        dbContext.Database.Migrate();
+    }
 }
 
 app.UseAuthentication();
+
+// Add JWT validation middleware for ExternalAuth tokens
+app.UseMiddleware<JwtValidationMiddleware>();
+
 app.UseAuthorization();
 
 app.MapControllers();

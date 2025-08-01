@@ -266,10 +266,11 @@ C:\Users\david\Documents\REMAX\RemaxApi\MappingService\obj\Debug\net8.0\staticwe
 C:\Users\david\Documents\REMAX\RemaxApi\MappingService\obj\Debug\net8.0\staticwebassets.build.json.cache
 C:\Users\david\Documents\REMAX\RemaxApi\MappingService\obj\Debug\net8.0\staticwebassets.development.json
 C:\Users\david\Documents\REMAX\RemaxApi\MappingService\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-C:\Users\david\Documents\REMAX\RemaxApi\MappingService\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 C:\Users\david\Documents\REMAX\RemaxApi\MappingService\obj\Debug\net8.0\MappingS.C5EC6475.Up2Date
 C:\Users\david\Documents\REMAX\RemaxApi\MappingService\obj\Debug\net8.0\MappingService.dll
 C:\Users\david\Documents\REMAX\RemaxApi\MappingService\obj\Debug\net8.0\refint\MappingService.dll
 C:\Users\david\Documents\REMAX\RemaxApi\MappingService\obj\Debug\net8.0\MappingService.pdb
 C:\Users\david\Documents\REMAX\RemaxApi\MappingService\obj\Debug\net8.0\MappingService.genruntimeconfig.cache
 C:\Users\david\Documents\REMAX\RemaxApi\MappingService\obj\Debug\net8.0\ref\MappingService.dll
+C:\Users\david\Documents\REMAX\RemaxApi\MappingService\bin\Debug\net8.0\RemaxApi.Shared.Authentication.dll
+C:\Users\david\Documents\REMAX\RemaxApi\MappingService\bin\Debug\net8.0\RemaxApi.Shared.Authentication.pdb

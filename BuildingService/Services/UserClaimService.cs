@@ -28,4 +28,31 @@ public class UserClaimService
         }
         return GetUserGuidFromClaims(userPrincipal.Claims, claimType);
     }
+
+    public string? GetUserIdFromJwt(ClaimsPrincipal userPrincipal)
+    {
+        if (userPrincipal?.Claims == null)
+        {
+            return null;
+        }
+
+        // Try different claim types used by ExternalAuth JWT
+        var userIdClaim = userPrincipal.Claims.FirstOrDefault(c => 
+            c.Type == "sub" || 
+            c.Type == "user_id" || 
+            c.Type == "guid" ||
+            c.Type == ClaimTypes.NameIdentifier);
+
+        return userIdClaim?.Value;
+    }
+
+    public Guid? GetUserGuidFromJwt(ClaimsPrincipal userPrincipal)
+    {
+        var userId = GetUserIdFromJwt(userPrincipal);
+        if (userId != null && Guid.TryParse(userId, out Guid userGuid))
+        {
+            return userGuid;
+        }
+        return null;
+    }
 }

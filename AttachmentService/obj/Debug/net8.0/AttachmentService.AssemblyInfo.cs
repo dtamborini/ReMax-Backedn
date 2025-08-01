@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AttachmentService")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8e2491e23112ca276cdbc1e21274c191e6c9ee16")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+86a70c47348bd98dd879f2f62ada2fa27a8105c1")]
 [assembly: System.Reflection.AssemblyProductAttribute("AttachmentService")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AttachmentService")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

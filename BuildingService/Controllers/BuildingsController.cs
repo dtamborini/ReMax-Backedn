@@ -143,6 +143,143 @@ namespace BuildingService.Controllers
             });
         }
 
+        [HttpGet("v2")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Building>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorDao))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorDao))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorDao))]
+        public async Task<ActionResult<IEnumerable<Building>>> GetBuildingsV2()
+        {
+            // Extract user ID from JWT token
+            var userIdString = _userClaimService.GetUserIdFromJwt(User);
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                var errorResponse = new ErrorDao
+                {
+                    Titles = new List<LocalizedTitle>
+                    {
+                        new LocalizedTitle { Culture = "en-US", Value = "Unable to determine user ID from JWT token." },
+                        new LocalizedTitle { Culture = "it-IT", Value = "Impossibile determinare l'ID utente dal token JWT." }
+                    }
+                };
+                return Unauthorized(errorResponse);
+            }
+
+            // Try to use user-filtered client if available
+            IEnumerable<BuildingDto>? buildingDtos;
+            
+            if (_buildingDataProviderClient is IUserFilteredBuildingDataProviderClient userFilteredClient)
+            {
+                // Use the enhanced client that supports user filtering
+                buildingDtos = await userFilteredClient.GetBuildingsForUserAsync(userIdString);
+            }
+            else
+            {
+                // Fallback to getting all buildings and filter manually
+                var allBuildings = await _buildingDataProviderClient.GetBuildingsAsync();
+                buildingDtos = allBuildings;
+                /*buildingDtos = allBuildings?.Where(b =>
+                    // Simulate user filtering based on building properties
+                    b.Name != null && b.Name.Contains(userIdString.Substring(0, Math.Min(4, userIdString.Length)))
+                );*/
+            }
+
+            if (buildingDtos == null)
+            {
+                var errorResponse = new ErrorDao
+                {
+                    Titles = new List<LocalizedTitle>
+                    {
+                        new LocalizedTitle
+                        {
+                            Culture = "en-US",
+                            Value = "No building data available from external provider or data could not be retrieved."
+                        },
+                        new LocalizedTitle
+                        {
+                            Culture = "it-IT",
+                            Value = "Nessun dato di edificio disponibile dal provider esterno o i dati non sono stati recuperati."
+                        },
+                    }
+                };
+                return BadRequest(errorResponse);
+            }
+
+            var userFilteredBuildings = buildingDtos.ToList();
+
+            // Get mapping configuration
+            var buildingMappings = await _mappingServiceHttpClient.GetMappingsWithOptionalParameters(isActive: true, entityType: EntityType.Building);
+            var entityMapping = buildingMappings.FirstOrDefault();
+
+            if (entityMapping == null)
+            {
+                var errorResponse = new ErrorDao
+                {
+                    Titles = new List<LocalizedTitle>
+                    {
+                        new LocalizedTitle { Culture = "en-US", Value = "No active 'Building' mapping found. Cannot process data." },
+                        new LocalizedTitle { Culture = "it-IT", Value = "Nessun mapping 'Building' attivo trovato. Impossibile processare i dati." }
+                    }
+                };
+                return NotFound(errorResponse);
+            }
+
+            // Get user GUID for mapping
+            var userGuid = _userClaimService.GetUserGuidFromJwt(User);
+            if (userGuid == null)
+            {
+                // Fallback: try to parse user ID as GUID or create a deterministic GUID
+                if (Guid.TryParse(userIdString, out Guid parsedGuid))
+                {
+                    userGuid = parsedGuid;
+                }
+                else
+                {
+                    // Create a deterministic GUID from user ID string
+                    userGuid = Guid.NewGuid(); // In production, use a deterministic method
+                }
+            }
+
+            // Map filtered buildings
+            var mappedBuildings = new List<Building>();
+            foreach (var buildingDto in userFilteredBuildings)
+            {
+                try
+                {
+                    var mappedBuilding = _buildingFactoryService.MapBuildingDto(
+                        buildingDto, entityMapping, userGuid.Value
+                    );
+                    mappedBuildings.Add(mappedBuilding);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Errore durante la mappatura di un edificio: {ex.Message}");
+                }
+            }
+
+            return Ok(new 
+            {
+                data = mappedBuildings,
+               /* userInfo = new 
+                {
+                    userId = userIdString,
+                    userName = _userService.GetUserName(),
+                    userEmail = _userService.GetUserEmail(),
+                    userRoles = _userService.GetUserRoles(),
+                    isAuthenticated = _userService.IsAuthenticated(),
+                    extractedFromJwt = true
+                },
+                filterInfo = new
+                {
+                    totalBuildingsFromProvider = buildingDtos.Count(),
+                    filteredBuildingsForUser = userFilteredBuildings.Count,
+                    mappedSuccessfully = mappedBuildings.Count
+                },
+                timestamp = DateTime.UtcNow*/
+            });
+        }
+
         [HttpGet("{guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorDao))]

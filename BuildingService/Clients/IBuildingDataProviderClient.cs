@@ -12,4 +12,9 @@ namespace BuildingService.Clients
         Task<bool> UpdateBuildingAsync(Guid id, BuildingDto updatedBuilding);
         Task<bool> DeleteBuildingAsync(Guid id);
     }
+
+    public interface IUserFilteredBuildingDataProviderClient : IBuildingDataProviderClient
+    {
+        Task<IEnumerable<BuildingDto>?> GetBuildingsForUserAsync(string userId);
+    }
 }
