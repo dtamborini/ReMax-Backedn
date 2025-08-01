@@ -52,7 +52,7 @@ namespace UserService.Services
                     userId: user.Id,
                     username: user.Username,
                     email: user.Email,
-                    roles: new List<string> { user.Role }
+                    role: user.Role 
                 );
 
                 _logger.LogInformation("Authentication successful for user: {Username} (ID: {UserId})", username, user.Id);

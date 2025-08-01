@@ -7,7 +7,7 @@ namespace UserService.Services
 {
     public interface IJwtTokenService
     {
-        string GenerateToken(string userId, string username, string email, List<string> roles);
+        string GenerateToken(string userId, string username, string email, string role);
         string GenerateToken(Dictionary<string, object> claims);
     }
 
@@ -22,7 +22,7 @@ namespace UserService.Services
             _logger = logger;
         }
 
-        public string GenerateToken(string userId, string username, string email, List<string> roles)
+        public string GenerateToken(string userId, string username, string email, string role)
         {
             var claims = new Dictionary<string, object>
             {
@@ -31,7 +31,7 @@ namespace UserService.Services
                 { "name", username },
                 { "username", username },
                 { "email", email },
-                { "role", roles }
+                { "role", role }
             };
 
             return GenerateToken(claims);
@@ -52,6 +52,11 @@ namespace UserService.Services
                 }
 
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+                
+                // Set the KeyId before creating credentials
+                var keyId = _configuration["ExternalAuth:KeyId"] ?? "my-mock-signing-key-id";
+                key.KeyId = keyId;
+                
                 var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
                 var tokenClaims = new List<Claim>();
@@ -91,13 +96,6 @@ namespace UserService.Services
 
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var token = tokenHandler.CreateToken(tokenDescriptor);
-                
-                // Add kid to JWT header for production compatibility
-                if (token is JwtSecurityToken jwtToken)
-                {
-                    var keyId = _configuration["ExternalAuth:KeyId"] ?? "my-mock-signing-key-id";
-                    jwtToken.Header["kid"] = keyId;
-                }
                 var tokenString = tokenHandler.WriteToken(token);
 
                 _logger.LogDebug("JWT token generated successfully for user: {UserId}", 

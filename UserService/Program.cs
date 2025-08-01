@@ -226,10 +226,11 @@ builder.Services.AddAuthentication(options =>
         var externalAuthSecretKey = builder.Configuration["ExternalAuth:SecretKey"];
         if (!string.IsNullOrEmpty(externalAuthSecretKey))
         {
+            var externalAuthKeyId = builder.Configuration["ExternalAuth:KeyId"] ?? "my-mock-signing-key-id";
             options.TokenValidationParameters.IssuerSigningKeys = new[]
             {
                 new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtValidationSecretKey)) { KeyId = signingKeyId },
-                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(externalAuthSecretKey))
+                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(externalAuthSecretKey)) { KeyId = externalAuthKeyId }
             };
         }
     }
