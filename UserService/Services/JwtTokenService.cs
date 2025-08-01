@@ -91,6 +91,13 @@ namespace UserService.Services
 
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var token = tokenHandler.CreateToken(tokenDescriptor);
+                
+                // Add kid to JWT header for production compatibility
+                if (token is JwtSecurityToken jwtToken)
+                {
+                    var keyId = _configuration["ExternalAuth:KeyId"] ?? "my-mock-signing-key-id";
+                    jwtToken.Header["kid"] = keyId;
+                }
                 var tokenString = tokenHandler.WriteToken(token);
 
                 _logger.LogDebug("JWT token generated successfully for user: {UserId}", 
