@@ -46,6 +46,14 @@ namespace UserService.Services
                 var audience = _configuration["ExternalAuth:Audience"];
                 var expirationHours = _configuration.GetValue<int>("ExternalAuth:ExpirationHours", 24);
 
+                // Debug logging for production troubleshooting
+                _logger.LogInformation("JWT Token Generation - SecretKey present: {HasSecretKey}, Length: {SecretKeyLength}, Issuer: {Issuer}, Audience: {Audience}, ExpirationHours: {ExpirationHours}", 
+                    !string.IsNullOrEmpty(secretKey), 
+                    secretKey?.Length ?? 0, 
+                    issuer ?? "null", 
+                    audience ?? "null", 
+                    expirationHours);
+
                 if (string.IsNullOrEmpty(secretKey))
                 {
                     throw new InvalidOperationException("ExternalAuth:SecretKey not configured");

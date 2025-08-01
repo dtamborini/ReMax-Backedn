@@ -210,6 +210,9 @@ builder.Services.AddAuthentication(options =>
         // Use only ExternalAuth configuration for simplicity
         var externalAuthSecretKey = builder.Configuration["ExternalAuth:SecretKey"];
         
+        // Debug logging for production troubleshooting
+        Console.WriteLine($"JWT Validation - ExternalAuth:SecretKey present: {!string.IsNullOrEmpty(externalAuthSecretKey)}, Length: {externalAuthSecretKey?.Length ?? 0}");
+        
         if (!string.IsNullOrEmpty(externalAuthSecretKey))
         {
             options.TokenValidationParameters = new TokenValidationParameters
