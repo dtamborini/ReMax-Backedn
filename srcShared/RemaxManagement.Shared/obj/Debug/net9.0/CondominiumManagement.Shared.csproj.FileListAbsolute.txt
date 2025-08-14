@@ -1,0 +1,14 @@
+C:\Users\david\Desktop\ReMaxApi\srcShared\CondominiumManagement.Shared\obj\Debug\net9.0\CondominiumManagement.Shared.csproj.AssemblyReference.cache
+C:\Users\david\Desktop\ReMaxApi\srcShared\CondominiumManagement.Shared\obj\Debug\net9.0\CondominiumManagement.Shared.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\david\Desktop\ReMaxApi\srcShared\CondominiumManagement.Shared\obj\Debug\net9.0\CondominiumManagement.Shared.AssemblyInfoInputs.cache
+C:\Users\david\Desktop\ReMaxApi\srcShared\CondominiumManagement.Shared\obj\Debug\net9.0\CondominiumManagement.Shared.AssemblyInfo.cs
+C:\Users\david\Desktop\ReMaxApi\srcShared\CondominiumManagement.Shared\obj\Debug\net9.0\CondominiumManagement.Shared.csproj.CoreCompileInputs.cache
+C:\Users\david\Desktop\ReMaxApi\srcShared\CondominiumManagement.Shared\bin\Debug\net9.0\CondominiumManagement.Shared.deps.json
+C:\Users\david\Desktop\ReMaxApi\srcShared\CondominiumManagement.Shared\bin\Debug\net9.0\CondominiumManagement.Shared.dll
+C:\Users\david\Desktop\ReMaxApi\srcShared\CondominiumManagement.Shared\bin\Debug\net9.0\CondominiumManagement.Shared.pdb
+C:\Users\david\Desktop\ReMaxApi\srcShared\CondominiumManagement.Shared\obj\Debug\net9.0\CondominiumManagement.Shared.dll
+C:\Users\david\Desktop\ReMaxApi\srcShared\CondominiumManagement.Shared\obj\Debug\net9.0\refint\CondominiumManagement.Shared.dll
+C:\Users\david\Desktop\ReMaxApi\srcShared\CondominiumManagement.Shared\obj\Debug\net9.0\CondominiumManagement.Shared.pdb
+C:\Users\david\Desktop\ReMaxApi\srcShared\CondominiumManagement.Shared\obj\Debug\net9.0\ref\CondominiumManagement.Shared.dll
+C:\Users\david\Desktop\ReMaxApi\srcShared\CondominiumManagement.Shared\bin\Debug\net9.0\CondominiumManagement.Shared.runtimeconfig.json
+C:\Users\david\Desktop\ReMaxApi\srcShared\CondominiumManagement.Shared\obj\Debug\net9.0\CondominiumManagement.Shared.genruntimeconfig.cache

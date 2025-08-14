@@ -1,0 +1,14 @@
+C:\Users\david\Desktop\ReMaxApi\srcShared\RemaxManagement.Shared\bin\Debug\net9.0\RemaxManagement.Shared.deps.json
+C:\Users\david\Desktop\ReMaxApi\srcShared\RemaxManagement.Shared\bin\Debug\net9.0\RemaxManagement.Shared.runtimeconfig.json
+C:\Users\david\Desktop\ReMaxApi\srcShared\RemaxManagement.Shared\bin\Debug\net9.0\RemaxManagement.Shared.dll
+C:\Users\david\Desktop\ReMaxApi\srcShared\RemaxManagement.Shared\bin\Debug\net9.0\RemaxManagement.Shared.pdb
+C:\Users\david\Desktop\ReMaxApi\srcShared\RemaxManagement.Shared\obj\Debug\net9.0\RemaxManagement.Shared.csproj.AssemblyReference.cache
+C:\Users\david\Desktop\ReMaxApi\srcShared\RemaxManagement.Shared\obj\Debug\net9.0\RemaxManagement.Shared.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\david\Desktop\ReMaxApi\srcShared\RemaxManagement.Shared\obj\Debug\net9.0\RemaxManagement.Shared.AssemblyInfoInputs.cache
+C:\Users\david\Desktop\ReMaxApi\srcShared\RemaxManagement.Shared\obj\Debug\net9.0\RemaxManagement.Shared.AssemblyInfo.cs
+C:\Users\david\Desktop\ReMaxApi\srcShared\RemaxManagement.Shared\obj\Debug\net9.0\RemaxManagement.Shared.csproj.CoreCompileInputs.cache
+C:\Users\david\Desktop\ReMaxApi\srcShared\RemaxManagement.Shared\obj\Debug\net9.0\RemaxManagement.Shared.dll
+C:\Users\david\Desktop\ReMaxApi\srcShared\RemaxManagement.Shared\obj\Debug\net9.0\refint\RemaxManagement.Shared.dll
+C:\Users\david\Desktop\ReMaxApi\srcShared\RemaxManagement.Shared\obj\Debug\net9.0\RemaxManagement.Shared.pdb
+C:\Users\david\Desktop\ReMaxApi\srcShared\RemaxManagement.Shared\obj\Debug\net9.0\RemaxManagement.Shared.genruntimeconfig.cache
+C:\Users\david\Desktop\ReMaxApi\srcShared\RemaxManagement.Shared\obj\Debug\net9.0\ref\RemaxManagement.Shared.dll
