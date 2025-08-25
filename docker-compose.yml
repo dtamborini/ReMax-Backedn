@@ -1,6 +1,4 @@
-version: '3.8'
-
-services:
+﻿services:
   postgres-db:
     image: postgres:16
     container_name: remax-postgres
@@ -25,8 +23,8 @@ services:
 
   authentication-service:
     build:
-      context: ./srcAuthenticationService/AuthenticationService
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: srcAuthenticationService/AuthenticationService/Dockerfile.multistage
     ports:
       - "5001:8080"
     environment:
@@ -41,8 +39,8 @@ services:
 
   building-service:
     build:
-      context: ./srcBuildingService/BuildingService
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: srcBuildingService/BuildingService/Dockerfile.multistage
     ports:
       - "5002:8080"
     environment:
@@ -57,8 +55,8 @@ services:
 
   workquote-service:
     build:
-      context: ./srcWorkQuoteService/WorkQuoteService
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: srcWorkQuoteService/WorkQuoteService/Dockerfile.multistage
     ports:
       - "5003:8080"
     environment:
@@ -73,8 +71,8 @@ services:
 
   workorder-service:
     build:
-      context: ./srcWorkOrderService/WorkOrderService
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: srcWorkOrderService/WorkOrderService/Dockerfile.multistage
     ports:
       - "5004:8080"
     environment:
@@ -89,8 +87,8 @@ services:
 
   rfq-service:
     build:
-      context: ./srcRfqService/RfqService
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: srcRfqService/RfqService/Dockerfile.multistage
     ports:
       - "5005:8080"
     environment:
@@ -105,8 +103,8 @@ services:
 
   worksheet-service:
     build:
-      context: ./srcWorkSheetService/WorkSheetService
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: srcWorkSheetService/WorkSheetService/Dockerfile.multistage
     ports:
       - "5006:8080"
     environment:
@@ -119,26 +117,10 @@ services:
       postgres-db:
         condition: service_healthy
 
-  asset-service:
-    build:
-      context: ./srcAssetService/AssetService
-      dockerfile: Dockerfile
-    ports:
-      - "5007:8080"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=remax_management;Username=remax_user;Password=remax_password123;Port=5432
-    networks:
-      - remax-network
-    depends_on:
-      postgres-db:
-        condition: service_healthy
-
   users-service:
     build:
-      context: ./srcUsersService/UsersService
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: srcUsersService/UsersService/Dockerfile.multistage
     ports:
       - "5008:8080"
     environment:
@@ -153,10 +135,106 @@ services:
 
   attachment-service:
     build:
-      context: ./srcAttachmentService/AttachmentService
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: srcAttachmentService/AttachmentService/Dockerfile.multistage
     ports:
       - "5009:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=remax_management;Username=remax_user;Password=remax_password123;Port=5432
+    networks:
+      - remax-network
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+
+  supplier-service:
+    build:
+      context: .
+      dockerfile: srcSupplierService/SupplierService/Dockerfile.multistage
+    ports:
+      - "5010:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=remax_management;Username=remax_user;Password=remax_password123;Port=5432
+    networks:
+      - remax-network
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+
+  communication-service:
+    build:
+      context: .
+      dockerfile: srcCommunicationService/CommunicationService/Dockerfile.multistage
+    ports:
+      - "5011:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=remax_management;Username=remax_user;Password=remax_password123;Port=5432
+    networks:
+      - remax-network
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+
+  issue-service:
+    build:
+      context: .
+      dockerfile: srcIssueService/IssueService/Dockerfile.multistage
+    ports:
+      - "5012:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=remax_management;Username=remax_user;Password=remax_password123;Port=5432
+    networks:
+      - remax-network
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+
+  maintenance-service:
+    build:
+      context: .
+      dockerfile: srcMaintenanceService/MaintenanceService/Dockerfile.multistage
+    ports:
+      - "5013:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=remax_management;Username=remax_user;Password=remax_password123;Port=5432
+    networks:
+      - remax-network
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+
+  insurance-service:
+    build:
+      context: .
+      dockerfile: srcInsuranceService/InsuranceService/Dockerfile.multistage
+    ports:
+      - "5014:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=remax_management;Username=remax_user;Password=remax_password123;Port=5432
+    networks:
+      - remax-network
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+
+  checklist-service:
+    build:
+      context: .
+      dockerfile: srcCheckListService/CheckListService/Dockerfile.multistage
+    ports:
+      - "5015:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
