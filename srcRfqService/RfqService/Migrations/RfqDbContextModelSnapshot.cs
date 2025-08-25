@@ -253,8 +253,10 @@ namespace RfqService.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<int>("Priority")
-                        .HasColumnType("integer");
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<bool>("RecommendedRetailPrice")
                         .HasColumnType("boolean");
@@ -281,7 +283,19 @@ namespace RfqService.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("RFQs");
+                    b.HasIndex("BuildingId")
+                        .HasDatabaseName("IX_RFQs_BuildingId");
+
+                    b.HasIndex("Priority")
+                        .HasDatabaseName("IX_RFQs_Priority");
+
+                    b.HasIndex("WorkOrderId")
+                        .HasDatabaseName("IX_RFQs_WorkOrderId");
+
+                    b.HasIndex("WorkSheetId")
+                        .HasDatabaseName("IX_RFQs_WorkSheetId");
+
+                    b.ToTable("RFQs", (string)null);
                 });
 
             modelBuilder.Entity("RfqService.Data.Entities.RfqSupplier", b =>
@@ -318,9 +332,14 @@ namespace RfqService.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RfqId");
+                    b.HasIndex("SupplierId")
+                        .HasDatabaseName("IX_RfqSuppliers_SupplierId");
 
-                    b.ToTable("RfqSuppliers");
+                    b.HasIndex("RfqId", "SupplierId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_RfqSuppliers_RfqId_SupplierId");
+
+                    b.ToTable("RfqSuppliers", (string)null);
                 });
 
             modelBuilder.Entity("RfqService.Data.Entities.Negotiation", b =>
@@ -332,6 +351,24 @@ namespace RfqService.Migrations
                         .IsRequired();
 
                     b.Navigation("Quotes");
+                });
+
+            modelBuilder.Entity("RfqService.Data.Entities.NegotiationAttachment", b =>
+                {
+                    b.HasOne("RfqService.Data.Entities.Negotiation", null)
+                        .WithMany()
+                        .HasForeignKey("NegotiationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("RfqService.Data.Entities.QuoteAttachment", b =>
+                {
+                    b.HasOne("RfqService.Data.Entities.Quotes", null)
+                        .WithMany()
+                        .HasForeignKey("QuoteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("RfqService.Data.Entities.Quotes", b =>
@@ -351,7 +388,8 @@ namespace RfqService.Migrations
                         .WithMany()
                         .HasForeignKey("RfqId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_RfqSuppliers_RFQs_RfqId");
 
                     b.Navigation("RFQ");
                 });

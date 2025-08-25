@@ -18,7 +18,7 @@ public class SupplierAttachment : BaseEntity
     
     // FK to Building (cross-microservice reference stored as Guid)
     [Required]
-    public Guid BuildingId { get; set; }
+    public Guid SupplierId { get; set; }
     
     // FK to Attachment (cross-microservice reference stored as Guid)
     [Required]

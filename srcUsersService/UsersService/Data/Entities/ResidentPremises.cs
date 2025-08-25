@@ -9,7 +9,7 @@ public class ResidentPremises : BaseEntity
     // Percentage of ownership/usage (nullable)
     public double? Percentage { get; set; }
     
-    // Foreign key to Building (from BuildingService)
+    // Foreign key to Building (from BuildingService) TODO: da togliere
     [Required]
     public Guid BuildingId { get; set; }
     

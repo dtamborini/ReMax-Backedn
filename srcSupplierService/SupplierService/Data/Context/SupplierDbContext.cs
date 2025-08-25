@@ -28,6 +28,22 @@ public class SupplierDbContext : BaseDbContext
     {
         base.OnModelCreating(modelBuilder);
         
+        // Configure SupplierBuilding entity
+        modelBuilder.Entity<SupplierBuilding>(entity =>
+        {
+            // FK constraint per SupplierId (interna al microservizio)
+            entity.HasOne(sb => sb.Supplier)
+                  .WithMany()
+                  .HasForeignKey(sb => sb.SupplierId)
+                  .HasConstraintName("FK_SupplierBuildings_Suppliers_SupplierId")
+                  .OnDelete(DeleteBehavior.Cascade)
+                  .IsRequired();
+            
+            // Indice per BuildingId (cross-microservice, solo performance)
+            entity.HasIndex(e => e.BuildingId)
+                  .HasDatabaseName("IX_SupplierBuildings_BuildingId");
+        });
+        
         // Configure SupplierAttachment entity
         modelBuilder.Entity<SupplierAttachment>(entity =>
         {
@@ -42,9 +58,16 @@ public class SupplierDbContext : BaseDbContext
                 .HasConversion<string>()
                 .HasMaxLength(20);
             
+            // FK constraint per SupplierId (interna al microservizio)
+            entity.HasOne<Supplier>()
+                  .WithMany()
+                  .HasForeignKey(sa => sa.SupplierId)
+                  .HasConstraintName("FK_SupplierAttachments_Suppliers_SupplierId")
+                  .OnDelete(DeleteBehavior.Cascade)
+                  .IsRequired();
+            
             // Indexes for performance
-            entity.HasIndex(e => e.BuildingId);
-            entity.HasIndex(e => e.AttachmentId);
+            entity.HasIndex(e => e.AttachmentId); // cross-microservice FK
             entity.HasIndex(e => e.State);
             entity.HasIndex(e => e.ExpireDate);
             entity.HasIndex(e => e.Name);

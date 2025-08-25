@@ -10,5 +10,5 @@ public class Service : BaseEntity
     public string Name { get; set; } = string.Empty;
 
     [Required]
-    public Guid BuildingId { get; set; }
+    public Guid SupplierId { get; set; } //TODO: SUPPLIERID, aggiungere anche campo apposta per "Altro" in modo che un utente possa mettere la descrizione che vuole
 }

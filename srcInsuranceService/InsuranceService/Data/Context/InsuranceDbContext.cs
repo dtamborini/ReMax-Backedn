@@ -30,6 +30,74 @@ public class InsuranceDbContext : BaseDbContext
     {
         base.OnModelCreating(modelBuilder);
         
+        // Configurazione FK interne al microservizio con HasOne/WithMany
+        
+        // InsuranceDeductible -> Insurance
+        modelBuilder.Entity<InsuranceDeductible>()
+            .HasOne<Insurance>()
+            .WithMany()
+            .HasForeignKey(d => d.InsuranceId)
+            .HasConstraintName("FK_InsuranceDeductibles_Insurances_InsuranceId")
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired();
+            
+        // InsuranceLimits -> Insurance
+        modelBuilder.Entity<InsuranceLimits>()
+            .HasOne<Insurance>()
+            .WithMany()
+            .HasForeignKey(l => l.InsuranceId)
+            .HasConstraintName("FK_InsuranceLimits_Insurances_InsuranceId")
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired();
+            
+        // InsuranceAccidents -> Insurance
+        modelBuilder.Entity<InsuranceAccidents>()
+            .HasOne<Insurance>()
+            .WithMany()
+            .HasForeignKey(a => a.InsuranceId)
+            .HasConstraintName("FK_InsuranceAccidents_Insurances_InsuranceId")
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired();
+            
+        // InsuranceAccidentsIssue -> InsuranceAccidents
+        modelBuilder.Entity<InsuranceAccidentsIssue>()
+            .HasOne<InsuranceAccidents>()
+            .WithMany()
+            .HasForeignKey(i => i.InsuranceAccidentId)
+            .HasConstraintName("FK_InsuranceAccidentsIssues_InsuranceAccidents_InsuranceAccidentId")
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired();
+            
+        // InsuranceAccidentsWorksPlan -> InsuranceAccidents
+        modelBuilder.Entity<InsuranceAccidentsWorksPlan>()
+            .HasOne<InsuranceAccidents>()
+            .WithMany()
+            .HasForeignKey(w => w.InsuranceAccidentId)
+            .HasConstraintName("FK_InsuranceAccidentsWorksPlans_InsuranceAccidents_InsuranceAccidentId")
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired();
+            
+        // Indici per FK cross-microservice (solo performance, no constraint)
+        modelBuilder.Entity<Insurance>()
+            .HasIndex(i => i.PolicyDocumentId)
+            .HasDatabaseName("IX_Insurances_PolicyDocumentId");
+            
+        modelBuilder.Entity<Insurance>()
+            .HasIndex(i => i.ReceiptDocumentId)
+            .HasDatabaseName("IX_Insurances_ReceiptDocumentId");
+            
+        modelBuilder.Entity<InsuranceAccidents>()
+            .HasIndex(a => a.BuildingId)
+            .HasDatabaseName("IX_InsuranceAccidents_BuildingId");
+            
+        modelBuilder.Entity<InsuranceAccidentsIssue>()
+            .HasIndex(i => i.IssueId)
+            .HasDatabaseName("IX_InsuranceAccidentsIssues_IssueId");
+            
+        modelBuilder.Entity<InsuranceAccidentsWorksPlan>()
+            .HasIndex(w => w.WorkPlanId)
+            .HasDatabaseName("IX_InsuranceAccidentsWorksPlans_WorkPlanId");
+        
         // Tutti usano lo schema public (default)
     }
     

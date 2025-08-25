@@ -93,6 +93,12 @@ namespace InsuranceService.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("PolicyDocumentId")
+                        .HasDatabaseName("IX_Insurances_PolicyDocumentId");
+
+                    b.HasIndex("ReceiptDocumentId")
+                        .HasDatabaseName("IX_Insurances_ReceiptDocumentId");
+
                     b.ToTable("Insurances");
                 });
 
@@ -142,6 +148,11 @@ namespace InsuranceService.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BuildingId")
+                        .HasDatabaseName("IX_InsuranceAccidents_BuildingId");
+
+                    b.HasIndex("InsuranceId");
+
                     b.ToTable("InsuranceAccidents");
                 });
 
@@ -179,6 +190,11 @@ namespace InsuranceService.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("InsuranceAccidentId");
+
+                    b.HasIndex("IssueId")
+                        .HasDatabaseName("IX_InsuranceAccidentsIssues_IssueId");
+
                     b.ToTable("InsuranceAccidentsIssues");
                 });
 
@@ -215,6 +231,11 @@ namespace InsuranceService.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("InsuranceAccidentId");
+
+                    b.HasIndex("WorkPlanId")
+                        .HasDatabaseName("IX_InsuranceAccidentsWorksPlans_WorkPlanId");
 
                     b.ToTable("InsuranceAccidentsWorksPlans");
                 });
@@ -258,6 +279,8 @@ namespace InsuranceService.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("InsuranceId");
+
                     b.ToTable("InsuranceDeductibles");
                 });
 
@@ -300,7 +323,59 @@ namespace InsuranceService.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("InsuranceId");
+
                     b.ToTable("InsuranceLimits");
+                });
+
+            modelBuilder.Entity("InsuranceService.Data.Entities.InsuranceAccidents", b =>
+                {
+                    b.HasOne("InsuranceService.Data.Entities.Insurance", null)
+                        .WithMany()
+                        .HasForeignKey("InsuranceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_InsuranceAccidents_Insurances_InsuranceId");
+                });
+
+            modelBuilder.Entity("InsuranceService.Data.Entities.InsuranceAccidentsIssue", b =>
+                {
+                    b.HasOne("InsuranceService.Data.Entities.InsuranceAccidents", null)
+                        .WithMany()
+                        .HasForeignKey("InsuranceAccidentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_InsuranceAccidentsIssues_InsuranceAccidents_InsuranceAccidentId");
+                });
+
+            modelBuilder.Entity("InsuranceService.Data.Entities.InsuranceAccidentsWorksPlan", b =>
+                {
+                    b.HasOne("InsuranceService.Data.Entities.InsuranceAccidents", null)
+                        .WithMany()
+                        .HasForeignKey("InsuranceAccidentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_InsuranceAccidentsWorksPlans_InsuranceAccidents_InsuranceAccidentId");
+                });
+
+            modelBuilder.Entity("InsuranceService.Data.Entities.InsuranceDeductible", b =>
+                {
+                    b.HasOne("InsuranceService.Data.Entities.Insurance", null)
+                        .WithMany()
+                        .HasForeignKey("InsuranceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_InsuranceDeductibles_Insurances_InsuranceId");
+                });
+
+            modelBuilder.Entity("InsuranceService.Data.Entities.InsuranceLimits", b =>
+                {
+                    b.HasOne("InsuranceService.Data.Entities.Insurance", null)
+                        .WithMany()
+                        .HasForeignKey("InsuranceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_InsuranceLimits_Insurances_InsuranceId");
                 });
 #pragma warning restore 612, 618
         }

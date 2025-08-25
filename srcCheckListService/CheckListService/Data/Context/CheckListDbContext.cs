@@ -55,12 +55,18 @@ public class CheckListDbContext : BaseDbContext
                 .HasConversion<string>()
                 .HasMaxLength(20);
             
+            // Configure foreign key relationship to CheckListGroup (internal FK)
+            entity.HasOne<CheckListGroup>()
+                .WithMany()
+                .HasForeignKey(e => e.CheckListGroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
             // Indexes for performance
             entity.HasIndex(e => e.CheckListGroupId);
             entity.HasIndex(e => e.Type);
             entity.HasIndex(e => e.Name);
-            entity.HasIndex(e => e.AttachmentId);
-            entity.HasIndex(e => e.BuildingAttachmentId);
+            entity.HasIndex(e => e.AttachmentId); // Cross-service FK - index only
+            entity.HasIndex(e => e.BuildingAttachmentId); // Cross-service FK - index only
             entity.HasIndex(e => e.Required);
         });
         

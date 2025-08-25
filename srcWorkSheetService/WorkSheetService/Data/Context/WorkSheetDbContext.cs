@@ -25,6 +25,21 @@ public class WorkSheetDbContext : BaseDbContext
     {
         base.OnModelCreating(modelBuilder);
         
+        // Configurazione WorkSheets
+        modelBuilder.Entity<WorkSheets>(entity =>
+        {
+            // Indice sulla FK BuildingId per performance
+            entity.HasIndex(w => w.BuildingId)
+                  .HasDatabaseName("IX_WorkSheets_BuildingId");
+                  
+            // BuildingId è required
+            entity.Property(w => w.BuildingId)
+                  .IsRequired();
+        });
+        
+        // Per FK cross-microservice useremo SQL raw nelle migrazioni
+        // HasOne/WithMany funziona solo per entità nello stesso DbContext
+        
         // Tutti usano lo schema public (default)
     }
     

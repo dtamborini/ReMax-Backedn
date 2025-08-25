@@ -8,7 +8,7 @@ public class Supplier : BaseEntity
 {
     [Required]
     [MaxLength(200)]
-    public string CompanyName { get; set; } = string.Empty;
+    public string CompanyName { get; set; } = string.Empty; //TODO: dividere con tabella contatti
 
     public string? Name { get; set; }
 

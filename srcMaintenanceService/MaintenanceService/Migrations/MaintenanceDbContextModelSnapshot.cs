@@ -66,6 +66,8 @@ namespace MaintenanceService.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("MaintenancePlanId");
+
                     b.ToTable("Deadlines");
                 });
 
@@ -114,7 +116,23 @@ namespace MaintenanceService.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("PremisesBuildingId")
+                        .HasDatabaseName("IX_MaintenancePlans_PremisesBuildingId");
+
+                    b.HasIndex("SupplierId")
+                        .HasDatabaseName("IX_MaintenancePlans_SupplierId");
+
                     b.ToTable("MaintenancePlans");
+                });
+
+            modelBuilder.Entity("MaintenanceService.Data.Entities.Deadline", b =>
+                {
+                    b.HasOne("MaintenanceService.Data.Entities.MaintenancePlans", null)
+                        .WithMany()
+                        .HasForeignKey("MaintenancePlanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_Deadlines_MaintenancePlans_MaintenancePlanId");
                 });
 #pragma warning restore 612, 618
         }

@@ -139,9 +139,6 @@ namespace SupplierService.Migrations
                     b.Property<Guid>("AttachmentId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("BuildingId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -169,6 +166,9 @@ namespace SupplierService.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<Guid>("SupplierId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -179,13 +179,13 @@ namespace SupplierService.Migrations
 
                     b.HasIndex("AttachmentId");
 
-                    b.HasIndex("BuildingId");
-
                     b.HasIndex("ExpireDate");
 
                     b.HasIndex("Name");
 
                     b.HasIndex("State");
+
+                    b.HasIndex("SupplierId");
 
                     b.ToTable("SupplierAttachments", (string)null);
                 });
@@ -227,9 +227,22 @@ namespace SupplierService.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BuildingId")
+                        .HasDatabaseName("IX_SupplierBuildings_BuildingId");
+
                     b.HasIndex("SupplierId");
 
                     b.ToTable("SupplierBuildings");
+                });
+
+            modelBuilder.Entity("SupplierService.Data.Entities.SupplierAttachment", b =>
+                {
+                    b.HasOne("SupplierService.Data.Entities.Supplier", null)
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_SupplierAttachments_Suppliers_SupplierId");
                 });
 
             modelBuilder.Entity("SupplierService.Data.Entities.SupplierBuilding", b =>
@@ -238,7 +251,8 @@ namespace SupplierService.Migrations
                         .WithMany()
                         .HasForeignKey("SupplierId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_SupplierBuildings_Suppliers_SupplierId");
 
                     b.Navigation("Supplier");
                 });

@@ -143,6 +143,15 @@ namespace CheckListService.Migrations
 
                     b.ToTable("CheckListGroups", (string)null);
                 });
+
+            modelBuilder.Entity("CheckListService.Data.Entities.CheckList", b =>
+                {
+                    b.HasOne("CheckListService.Data.Entities.CheckListGroup", null)
+                        .WithMany()
+                        .HasForeignKey("CheckListGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
 #pragma warning restore 612, 618
         }
     }

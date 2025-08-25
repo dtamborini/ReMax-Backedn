@@ -38,9 +38,15 @@ public class WorkOrderDbContext : BaseDbContext
             entity.Property(e => e.CustomData)
                 .HasColumnType("jsonb");
             
+            // Configure foreign key relationship to WorkOrder (internal FK)
+            entity.HasOne<WorkOrder>()
+                .WithMany()
+                .HasForeignKey(e => e.WorkOrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
             // Indexes for performance
             entity.HasIndex(e => e.WorkOrderId);
-            entity.HasIndex(e => e.AttachmentId);
+            entity.HasIndex(e => e.AttachmentId); // Cross-service FK - index only
             entity.HasIndex(e => new { e.WorkOrderId, e.AttachmentId }).IsUnique();
         });
         
@@ -53,9 +59,15 @@ public class WorkOrderDbContext : BaseDbContext
             entity.Property(e => e.CustomData)
                 .HasColumnType("jsonb");
             
+            // Configure foreign key relationship to Intervention (internal FK)
+            entity.HasOne<Intervention>()
+                .WithMany()
+                .HasForeignKey(e => e.InterventionId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
             // Indexes for performance
             entity.HasIndex(e => e.InterventionId);
-            entity.HasIndex(e => e.AttachmentId);
+            entity.HasIndex(e => e.AttachmentId); // Cross-service FK - index only
             entity.HasIndex(e => new { e.InterventionId, e.AttachmentId }).IsUnique();
         });
         

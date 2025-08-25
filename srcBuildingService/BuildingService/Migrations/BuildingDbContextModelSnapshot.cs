@@ -244,8 +244,6 @@ namespace BuildingService.Migrations
 
                     b.HasIndex("AttachmentId");
 
-                    b.HasIndex("BuildingId");
-
                     b.HasIndex("Name");
 
                     b.HasIndex("BuildingId", "AttachmentId")
@@ -316,6 +314,12 @@ namespace BuildingService.Migrations
 
             modelBuilder.Entity("BuildingService.Data.Entities.BuildingAttachment", b =>
                 {
+                    b.HasOne("BuildingService.Data.Entities.Building", null)
+                        .WithMany()
+                        .HasForeignKey("BuildingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("BuildingService.Data.Entities.BuildingAttachment", null)
                         .WithMany()
                         .HasForeignKey("FatherId")
@@ -331,6 +335,16 @@ namespace BuildingService.Migrations
                         .IsRequired();
 
                     b.Navigation("Building");
+                });
+
+            modelBuilder.Entity("BuildingService.Data.Entities.PolicyAttachment", b =>
+                {
+                    b.HasOne("BuildingService.Data.Entities.Building", null)
+                        .WithMany()
+                        .HasForeignKey("BuildingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_PolicyAttachments_Buildings_BuildingId");
                 });
 
             modelBuilder.Entity("BuildingService.Data.Entities.PremisesBuilding", b =>

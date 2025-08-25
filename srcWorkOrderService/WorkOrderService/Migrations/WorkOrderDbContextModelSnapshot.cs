@@ -285,6 +285,15 @@ namespace WorkOrderService.Migrations
                     b.Navigation("WorkOrder");
                 });
 
+            modelBuilder.Entity("WorkOrderService.Data.Entities.InterventionAttachment", b =>
+                {
+                    b.HasOne("WorkOrderService.Data.Entities.Intervention", null)
+                        .WithMany()
+                        .HasForeignKey("InterventionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("WorkOrderService.Data.Entities.State", b =>
                 {
                     b.HasOne("WorkOrderService.Data.Entities.Intervention", "Intervention")
@@ -294,6 +303,15 @@ namespace WorkOrderService.Migrations
                         .IsRequired();
 
                     b.Navigation("Intervention");
+                });
+
+            modelBuilder.Entity("WorkOrderService.Data.Entities.WorkOrderAttachment", b =>
+                {
+                    b.HasOne("WorkOrderService.Data.Entities.WorkOrder", null)
+                        .WithMany()
+                        .HasForeignKey("WorkOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

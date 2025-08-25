@@ -62,6 +62,9 @@ namespace CommunicationService.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BuildingId")
+                        .HasDatabaseName("IX_Communications_BuildingId");
+
                     b.ToTable("Communications");
                 });
 
@@ -101,12 +104,20 @@ namespace CommunicationService.Migrations
 
                     b.HasIndex("AttachmentId");
 
-                    b.HasIndex("CommunicationId");
-
                     b.HasIndex("CommunicationId", "AttachmentId")
                         .IsUnique();
 
                     b.ToTable("CommunicationAttachments", (string)null);
+                });
+
+            modelBuilder.Entity("CommunicationService.Data.Entities.CommunicationAttachment", b =>
+                {
+                    b.HasOne("CommunicationService.Data.Entities.Communication", null)
+                        .WithMany()
+                        .HasForeignKey("CommunicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_CommunicationAttachments_Communications_CommunicationId");
                 });
 #pragma warning restore 612, 618
         }

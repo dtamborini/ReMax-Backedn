@@ -70,6 +70,9 @@ namespace WorkSheetService.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BuildingId")
+                        .HasDatabaseName("IX_WorkSheets_BuildingId");
+
                     b.ToTable("WorkSheets");
                 });
 #pragma warning restore 612, 618

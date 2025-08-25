@@ -14,4 +14,6 @@ public class Communication : BaseEntity
 
     [Required]
     public Guid BuildingId { get; set; }
+    
+    //TODO: aggiungi residenti, fornitori,
 }

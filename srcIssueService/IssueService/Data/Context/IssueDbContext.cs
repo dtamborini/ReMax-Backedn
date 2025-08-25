@@ -21,7 +21,7 @@ public class IssueDbContext : BaseDbContext
     
     public DbSet<Issue> Issues { get; set; } = null!;
     public DbSet<IssueAttachment> IssueAttachments { get; set; } = null!;
-    public DbSet<IssueWorkPlans> IssueWorkPlans { get; set; } = null!;
+    public DbSet<IssueWorkSheet> IssueWorkPlans { get; set; } = null!;
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -36,14 +36,20 @@ public class IssueDbContext : BaseDbContext
             entity.Property(e => e.CustomData)
                 .HasColumnType("jsonb");
             
+            // Configure foreign key relationship to Issue (internal FK)
+            entity.HasOne<Issue>()
+                .WithMany()
+                .HasForeignKey(e => e.IssueId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
             // Indexes for performance
             entity.HasIndex(e => e.IssueId);
-            entity.HasIndex(e => e.AttachmentId);
+            entity.HasIndex(e => e.AttachmentId); // Cross-service FK - index only
             entity.HasIndex(e => new { e.IssueId, e.AttachmentId }).IsUnique();
         });
         
         // Configure IssueWorkPlans entity
-        modelBuilder.Entity<IssueWorkPlans>(entity =>
+        modelBuilder.Entity<IssueWorkSheet>(entity =>
         {
             entity.ToTable("IssueWorkPlans");
             
@@ -51,9 +57,15 @@ public class IssueDbContext : BaseDbContext
             entity.Property(e => e.CustomData)
                 .HasColumnType("jsonb");
             
+            // Configure foreign key relationship to Issue (internal FK)
+            entity.HasOne<Issue>()
+                .WithMany()
+                .HasForeignKey(e => e.IssueId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
             // Indexes for performance
             entity.HasIndex(e => e.IssueId);
-            entity.HasIndex(e => e.WorkSheetId);
+            entity.HasIndex(e => e.WorkSheetId); // Cross-service FK - index only
             entity.HasIndex(e => new { e.IssueId, e.WorkSheetId }).IsUnique();
         });
         

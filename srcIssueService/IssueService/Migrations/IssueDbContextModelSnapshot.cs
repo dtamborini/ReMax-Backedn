@@ -163,6 +163,24 @@ namespace IssueService.Migrations
 
                     b.ToTable("IssueWorkPlans", (string)null);
                 });
+
+            modelBuilder.Entity("IssueService.Data.Entities.IssueAttachment", b =>
+                {
+                    b.HasOne("IssueService.Data.Entities.Issue", null)
+                        .WithMany()
+                        .HasForeignKey("IssueId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("IssueService.Data.Entities.IssueWorkPlans", b =>
+                {
+                    b.HasOne("IssueService.Data.Entities.Issue", null)
+                        .WithMany()
+                        .HasForeignKey("IssueId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
 #pragma warning restore 612, 618
         }
     }

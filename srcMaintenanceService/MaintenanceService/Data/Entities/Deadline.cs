@@ -19,4 +19,6 @@ public class Deadline : BaseEntity
     // FK a MaintenancePlans
     [Required]
     public Guid MaintenancePlanId { get; set; }
+    
+    //ToDO: mettere buildingId per semplicità
 }

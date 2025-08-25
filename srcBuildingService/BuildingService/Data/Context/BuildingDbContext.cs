@@ -116,6 +116,12 @@ public class BuildingDbContext : BaseDbContext
                 .HasForeignKey(e => e.FatherId)
                 .OnDelete(DeleteBehavior.Restrict);
             
+            // Configure foreign key relationship to Building (internal FK)
+            entity.HasOne<Building>()
+                .WithMany()
+                .HasForeignKey(e => e.BuildingId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
             // Configure CustomData as JSONB
             entity.Property(e => e.CustomData)
                 .HasColumnType("jsonb");
@@ -129,7 +135,7 @@ public class BuildingDbContext : BaseDbContext
             entity.HasIndex(e => e.BuildingId);
             entity.HasIndex(e => e.FatherId);
             entity.HasIndex(e => e.Type);
-            entity.HasIndex(e => e.AttachmentId);
+            entity.HasIndex(e => e.AttachmentId); // Cross-service FK - index only
         });
         
         // Configure PolicyAttachment entity
@@ -137,13 +143,19 @@ public class BuildingDbContext : BaseDbContext
         {
             entity.ToTable("PolicyAttachments");
             
+            // Configure foreign key relationship to Building (internal FK)
+            entity.HasOne<Building>()
+                .WithMany()
+                .HasForeignKey(e => e.BuildingId)
+                .HasConstraintName("FK_PolicyAttachments_Buildings_BuildingId")
+                .OnDelete(DeleteBehavior.Cascade);
+            
             // Configure CustomData as JSONB
             entity.Property(e => e.CustomData)
                 .HasColumnType("jsonb");
             
             // Indexes for performance
-            entity.HasIndex(e => e.BuildingId);
-            entity.HasIndex(e => e.AttachmentId);
+            entity.HasIndex(e => e.AttachmentId); // Cross-service FK - index only
             entity.HasIndex(e => e.Name);
             entity.HasIndex(e => new { e.BuildingId, e.AttachmentId }).IsUnique();
         });

@@ -35,11 +35,23 @@ public class CommunicationDbContext : BaseDbContext
             entity.Property(e => e.CustomData)
                 .HasColumnType("jsonb");
             
+            // FK interna: CommunicationAttachment -> Communication
+            entity.HasOne<Communication>()
+                .WithMany()
+                .HasForeignKey(ca => ca.CommunicationId)
+                .HasConstraintName("FK_CommunicationAttachments_Communications_CommunicationId")
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+            
             // Indexes for performance
-            entity.HasIndex(e => e.CommunicationId);
             entity.HasIndex(e => e.AttachmentId);
             entity.HasIndex(e => new { e.CommunicationId, e.AttachmentId }).IsUnique();
         });
+        
+        // Indice per FK cross-microservice
+        modelBuilder.Entity<Communication>()
+            .HasIndex(c => c.BuildingId)
+            .HasDatabaseName("IX_Communications_BuildingId");
         
         // Tutti usano lo schema public (default)
     }

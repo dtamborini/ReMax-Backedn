@@ -26,6 +26,24 @@ public class MaintenanceDbContext : BaseDbContext
     {
         base.OnModelCreating(modelBuilder);
         
+        // FK interna: Deadline -> MaintenancePlans
+        modelBuilder.Entity<Deadline>()
+            .HasOne<MaintenancePlans>()
+            .WithMany()
+            .HasForeignKey(d => d.MaintenancePlanId)
+            .HasConstraintName("FK_Deadlines_MaintenancePlans_MaintenancePlanId")
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired();
+            
+        // Indici per FK cross-microservice (solo performance)
+        modelBuilder.Entity<MaintenancePlans>()
+            .HasIndex(m => m.SupplierId)
+            .HasDatabaseName("IX_MaintenancePlans_SupplierId");
+            
+        modelBuilder.Entity<MaintenancePlans>()
+            .HasIndex(m => m.PremisesBuildingId)
+            .HasDatabaseName("IX_MaintenancePlans_PremisesBuildingId");
+        
         // Tutti usano lo schema public (default)
     }
     
