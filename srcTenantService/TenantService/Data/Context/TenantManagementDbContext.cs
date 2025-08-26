@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RemaxManagement.Shared.MultiTenant;
+using RemaxManagement.Shared.Models;
 
 namespace TenantService.Data.Context;
 
@@ -13,6 +14,7 @@ public class TenantManagementDbContext : DbContext
 
     public DbSet<Tenant> Tenants { get; set; }
     public DbSet<TenantDomain> TenantDomains { get; set; }
+    public DbSet<SuperAdmin> SuperAdmins { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -59,6 +61,26 @@ public class TenantManagementDbContext : DbContext
                   .WithMany(t => t.Domains)
                   .HasForeignKey(td => td.TenantId)
                   .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<SuperAdmin>(entity =>
+        {
+            entity.ToTable("SuperAdmins");
+            entity.HasKey(sa => sa.Id);
+            entity.Property(sa => sa.Id).ValueGeneratedOnAdd();
+            
+            entity.Property(sa => sa.Username).IsRequired().HasMaxLength(100);
+            entity.Property(sa => sa.Email).IsRequired().HasMaxLength(255);
+            entity.Property(sa => sa.PasswordHash).IsRequired().HasMaxLength(255);
+            entity.Property(sa => sa.FullName).HasMaxLength(100);
+            
+            // Indici
+            entity.HasIndex(sa => sa.Username).IsUnique();
+            entity.HasIndex(sa => sa.Email).IsUnique();
+            entity.HasIndex(sa => sa.IsActive);
+            
+            // Ignora la proprietà Role poiché è calcolata
+            entity.Ignore(sa => sa.Role);
         });
     }
 }

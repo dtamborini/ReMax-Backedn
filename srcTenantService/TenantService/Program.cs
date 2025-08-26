@@ -80,6 +80,9 @@ var app = builder.Build();
 // Apply pending migrations for tenant management
 app.ApplyMigrations<TenantManagementDbContext>();
 
+// Seed initial Super Admin
+await SeedDataAsync(app);
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -105,3 +108,21 @@ app.MapGet("/health", () => "Tenant Service is running")
     .WithOpenApi();
 
 app.Run();
+
+// Metodo helper per il seeding
+async Task SeedDataAsync(WebApplication app)
+{
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<TenantManagementDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    
+    try
+    {
+        await TenantService.Data.Seeding.SuperAdminSeeder.SeedSuperAdminAsync(context);
+        logger.LogInformation("Data seeding completed successfully");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Error during data seeding");
+    }
+}

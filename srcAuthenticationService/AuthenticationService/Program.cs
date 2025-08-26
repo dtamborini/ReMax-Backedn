@@ -43,6 +43,7 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddHttpClient();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ISuperAdminAuthService, SuperAdminAuthService>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
 // Configura multi-tenancy per risoluzione tenant

@@ -63,7 +63,7 @@ public class TenantManagementController : ControllerBase
     /// Crea un nuovo tenant
     /// </summary>
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "SuperAdmin")]
     public async Task<ActionResult<Tenant>> CreateTenant(CreateTenantRequest request)
     {
         if (!ModelState.IsValid)
@@ -138,7 +138,7 @@ public class TenantManagementController : ControllerBase
     /// Aggiorna un tenant esistente
     /// </summary>
     [HttpPut("{id:guid}")]
-    [Authorize]
+    [Authorize(Roles = "SuperAdmin")]
     public async Task<IActionResult> UpdateTenant(Guid id, UpdateTenantRequest request)
     {
         if (!ModelState.IsValid)
@@ -187,7 +187,7 @@ public class TenantManagementController : ControllerBase
     /// Elimina un tenant
     /// </summary>
     [HttpDelete("{id:guid}")]
-    [Authorize]
+    [Authorize(Roles = "SuperAdmin")]
     public async Task<IActionResult> DeleteTenant(Guid id)
     {
         var tenant = await _context.Tenants
