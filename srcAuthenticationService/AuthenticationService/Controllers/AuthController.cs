@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using AuthenticationService.DTOs;
 using AuthenticationService.Interfaces;
+using Finbuckle.MultiTenant;
+using RemaxManagement.Shared.MultiTenant;
 
 namespace AuthenticationService.Controllers
 {
@@ -27,18 +29,30 @@ namespace AuthenticationService.Controllers
                 return BadRequest(ModelState);
             }
 
-            _logger.LogInformation("Login attempt for user: {Email}", request.Email);
+            // Il tenant viene risolto automaticamente dal middleware multi-tenant basato sull'Host header
+            var tenantInfo = HttpContext.GetMultiTenantContext<Tenant>()?.TenantInfo;
 
-            var result = await _authService.AuthenticateAsync(request);
+            if (tenantInfo == null)
+            {
+                _logger.LogWarning("No tenant resolved for login attempt. Email: {Email}, Host: {Host}", 
+                    request.Email, Request.Host);
+                return BadRequest(new { error = "Invalid tenant domain or tenant not found" });
+            }
+
+            _logger.LogInformation("Login attempt for user: {Email} in tenant: {TenantName} ({TenantId})", 
+                request.Email, tenantInfo.Name, tenantInfo.TenantId);
+
+            var result = await _authService.AuthenticateAsync(request, tenantInfo);
 
             if (!result.Success)
             {
-                _logger.LogWarning("Login failed for user: {Email}. Error: {Email}", 
-                    request.Email, result.Error);
+                _logger.LogWarning("Login failed for user: {Email} in tenant: {TenantId}. Error: {Error}", 
+                    request.Email, tenantInfo.TenantId, result.Error);
                 return Unauthorized(new { error = result.Error });
             }
 
-            _logger.LogInformation("Login successful for user: {Username}", request.Email);
+            _logger.LogInformation("Login successful for user: {Email} in tenant: {TenantId}", 
+                request.Email, tenantInfo.TenantId);
             return Ok(result.Response);
         }
 

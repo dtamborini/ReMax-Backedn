@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Finbuckle.MultiTenant;
 using RemaxManagement.Shared.Data.Context;
 using IssueService.Data.Entities;
 
@@ -15,6 +16,17 @@ public class IssueDbContext : BaseDbContext
     
     public IssueDbContext(DbContextOptions<IssueDbContext> options, IHttpContextAccessor httpContextAccessor) 
         : base(options)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    }
+    
+    public IssueDbContext(DbContextOptions<IssueDbContext> options, ITenantInfo tenantInfo) 
+        : base(options, tenantInfo)
+    {
+    }
+    
+    public IssueDbContext(DbContextOptions<IssueDbContext> options, IHttpContextAccessor httpContextAccessor, ITenantInfo tenantInfo) 
+        : base(options, tenantInfo)
     {
         _httpContextAccessor = httpContextAccessor;
     }

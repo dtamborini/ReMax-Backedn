@@ -1,6 +1,7 @@
 using InsuranceService.Data.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Finbuckle.MultiTenant;
 using RemaxManagement.Shared.Data.Context;
 
 namespace InsuranceService.Data.Context;
@@ -15,6 +16,17 @@ public class InsuranceDbContext : BaseDbContext
     
     public InsuranceDbContext(DbContextOptions<InsuranceDbContext> options, IHttpContextAccessor httpContextAccessor) 
         : base(options)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    }
+    
+    public InsuranceDbContext(DbContextOptions<InsuranceDbContext> options, ITenantInfo tenantInfo) 
+        : base(options, tenantInfo)
+    {
+    }
+    
+    public InsuranceDbContext(DbContextOptions<InsuranceDbContext> options, IHttpContextAccessor httpContextAccessor, ITenantInfo tenantInfo) 
+        : base(options, tenantInfo)
     {
         _httpContextAccessor = httpContextAccessor;
     }

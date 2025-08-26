@@ -45,6 +45,9 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
+// Configura multi-tenancy per risoluzione tenant
+builder.Services.AddRemaxMultiTenancy(builder.Configuration);
+
 // Usa la configurazione JWT shared
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
@@ -74,6 +77,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
+
+// Multi-tenant middleware deve essere PRIMA dell'autenticazione
+app.UseMultiTenant();
+
 app.UseAuthentication();
 app.UseAuthorization();
 

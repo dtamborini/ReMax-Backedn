@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Finbuckle.MultiTenant;
 using RemaxManagement.Shared.Data.Context;
 using AttachmentService.Data.Entities;
 
@@ -15,6 +16,17 @@ public class AttachmentDbContext : BaseDbContext
     
     public AttachmentDbContext(DbContextOptions<AttachmentDbContext> options, IHttpContextAccessor httpContextAccessor) 
         : base(options)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    }
+    
+    public AttachmentDbContext(DbContextOptions<AttachmentDbContext> options, ITenantInfo tenantInfo) 
+        : base(options, tenantInfo)
+    {
+    }
+    
+    public AttachmentDbContext(DbContextOptions<AttachmentDbContext> options, IHttpContextAccessor httpContextAccessor, ITenantInfo tenantInfo) 
+        : base(options, tenantInfo)
     {
         _httpContextAccessor = httpContextAccessor;
     }

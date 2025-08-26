@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Finbuckle.MultiTenant;
 using RemaxManagement.Shared.Data.Context;
 using BuildingService.Data.Entities;
 using BuildingService.Data.Enums;
@@ -16,6 +17,17 @@ public class BuildingDbContext : BaseDbContext
     
     public BuildingDbContext(DbContextOptions<BuildingDbContext> options, IHttpContextAccessor httpContextAccessor) 
         : base(options)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    }
+    
+    public BuildingDbContext(DbContextOptions<BuildingDbContext> options, ITenantInfo tenantInfo) 
+        : base(options, tenantInfo)
+    {
+    }
+    
+    public BuildingDbContext(DbContextOptions<BuildingDbContext> options, IHttpContextAccessor httpContextAccessor, ITenantInfo tenantInfo) 
+        : base(options, tenantInfo)
     {
         _httpContextAccessor = httpContextAccessor;
     }

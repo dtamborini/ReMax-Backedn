@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Finbuckle.MultiTenant;
 using RemaxManagement.Shared.Data.Context;
 using WorkOrderService.Data.Entities;
 
@@ -15,6 +16,17 @@ public class WorkOrderDbContext : BaseDbContext
     
     public WorkOrderDbContext(DbContextOptions<WorkOrderDbContext> options, IHttpContextAccessor httpContextAccessor) 
         : base(options)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    }
+    
+    public WorkOrderDbContext(DbContextOptions<WorkOrderDbContext> options, ITenantInfo tenantInfo) 
+        : base(options, tenantInfo)
+    {
+    }
+    
+    public WorkOrderDbContext(DbContextOptions<WorkOrderDbContext> options, IHttpContextAccessor httpContextAccessor, ITenantInfo tenantInfo) 
+        : base(options, tenantInfo)
     {
         _httpContextAccessor = httpContextAccessor;
     }

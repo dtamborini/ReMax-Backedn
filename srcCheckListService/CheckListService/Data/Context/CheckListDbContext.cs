@@ -1,6 +1,7 @@
 using CheckListService.Data.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Finbuckle.MultiTenant;
 using RemaxManagement.Shared.Data.Context;
 
 namespace CheckListService.Data.Context;
@@ -15,6 +16,17 @@ public class CheckListDbContext : BaseDbContext
     
     public CheckListDbContext(DbContextOptions<CheckListDbContext> options, IHttpContextAccessor httpContextAccessor) 
         : base(options)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    }
+    
+    public CheckListDbContext(DbContextOptions<CheckListDbContext> options, ITenantInfo tenantInfo) 
+        : base(options, tenantInfo)
+    {
+    }
+    
+    public CheckListDbContext(DbContextOptions<CheckListDbContext> options, IHttpContextAccessor httpContextAccessor, ITenantInfo tenantInfo) 
+        : base(options, tenantInfo)
     {
         _httpContextAccessor = httpContextAccessor;
     }

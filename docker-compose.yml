@@ -245,6 +245,22 @@
       postgres-db:
         condition: service_healthy
 
+  tenant-service:
+    build:
+      context: .
+      dockerfile: srcTenantService/TenantService/Dockerfile.multistage
+    ports:
+      - "5016:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=remax_management;Username=remax_user;Password=remax_password123;Port=5432
+    networks:
+      - remax-network
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+
 volumes:
   postgres_data:
 

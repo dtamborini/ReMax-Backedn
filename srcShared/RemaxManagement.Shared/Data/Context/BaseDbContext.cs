@@ -1,13 +1,23 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
+using Finbuckle.MultiTenant;
 using RemaxManagement.Shared.Data.Entities;
+using RemaxManagement.Shared.MultiTenant;
 using System.Linq.Expressions;
 
 namespace RemaxManagement.Shared.Data.Context;
 
 public abstract class BaseDbContext : DbContext
 {
+    private readonly ITenantInfo? _tenantInfo;
+    
     protected BaseDbContext(DbContextOptions options) : base(options)
     {
+    }
+    
+    protected BaseDbContext(DbContextOptions options, ITenantInfo? tenantInfo) : base(options)
+    {
+        _tenantInfo = tenantInfo;
     }
 
     public override int SaveChanges()
@@ -60,6 +70,9 @@ public abstract class BaseDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        
+        // Configura schema tenant se disponibile
+        ConfigureTenantSchema(modelBuilder);
 
         // Apply global query filter for soft delete
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
@@ -75,5 +88,21 @@ public abstract class BaseDbContext : DbContext
                 modelBuilder.Entity(entityType.ClrType).HasQueryFilter(lambda);
             }
         }
+    }
+    
+    private void ConfigureTenantSchema(ModelBuilder modelBuilder)
+    {
+        // Se abbiamo informazioni sul tenant, usa il suo schema
+        if (_tenantInfo is Tenant tenant)
+        {
+            modelBuilder.HasDefaultSchema(tenant.SchemaName);
+        }
+        else if (_tenantInfo != null && !string.IsNullOrEmpty(_tenantInfo.Id))
+        {
+            // Fallback: costruisci schema name dall'ID del tenant
+            var schemaName = $"tenant_{_tenantInfo.Id.Replace("-", "")}";
+            modelBuilder.HasDefaultSchema(schemaName);
+        }
+        // Se non c'è tenant info, usa schema pubblico (solo per TenantService)
     }
 }

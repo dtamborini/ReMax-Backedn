@@ -380,7 +380,6 @@ FodyWeavers.xsd
 
 # Docker
 .dockerignore
-Dockerfile*
 
 # Environment variables
 .env

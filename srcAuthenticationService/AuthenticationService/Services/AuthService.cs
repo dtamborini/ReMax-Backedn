@@ -5,6 +5,7 @@ using AuthenticationService.Models;
 using RemaxManagement.Shared.Auth;
 using Microsoft.Extensions.Options;
 using RemaxManagement.Shared.Options;
+using RemaxManagement.Shared.MultiTenant;
 
 namespace AuthenticationService.Services
 {
@@ -57,40 +58,46 @@ namespace AuthenticationService.Services
             _useMock = _configuration.GetValue<bool>("AuthenticationSettings:AuthMock");
         }
 
-        public async Task<(bool Success, LoginResponse? Response, string? Error)> AuthenticateAsync(LoginRequest request)
+        public async Task<(bool Success, LoginResponse? Response, string? Error)> AuthenticateAsync(LoginRequest request, Tenant? tenant = null)
         {
             try
             {
                 if (_useMock)
                 {
-                    return await AuthenticateWithMockAsync(request);
+                    return await AuthenticateWithMockAsync(request, tenant);
                 }
                 else
                 {
-                    return await AuthenticateWithExternalApiAsync(request);
+                    return await AuthenticateWithExternalApiAsync(request, tenant);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error during authentication");
+                _logger.LogError(ex, "Error during authentication for tenant: {TenantId}", tenant?.TenantId);
                 return (false, null, "An error occurred during authentication");
             }
         }
 
-        private async Task<(bool Success, LoginResponse? Response, string? Error)> AuthenticateWithMockAsync(LoginRequest request)
+        private async Task<(bool Success, LoginResponse? Response, string? Error)> AuthenticateWithMockAsync(LoginRequest request, Tenant? tenant)
         {
             await Task.Delay(100);
 
+            // In modalità mock, tutti gli utenti possono autenticarsi in qualsiasi tenant
             var user = _mockUsers.FirstOrDefault(u => 
-                u.Email.Equals(request.Email, StringComparison.OrdinalIgnoreCase) &&
+                !string.IsNullOrEmpty(u.Email) && u.Email.Equals(request.Email, StringComparison.OrdinalIgnoreCase) &&
                 u.Password == request.Password);
 
             if (user == null)
             {
+                _logger.LogWarning("Mock authentication failed for email: {Email} in tenant: {TenantId}", 
+                    request.Email, tenant?.TenantId);
                 return (false, null, "Invalid username or password");
             }
 
-            var tokens = GenerateTokens(user);
+            _logger.LogInformation("Mock authentication successful for user: {Email} in tenant: {TenantId}", 
+                request.Email, tenant?.TenantId);
+
+            var tokens = GenerateTokens(user, tenant);
             
             var response = new LoginResponse
             {
@@ -103,15 +110,25 @@ namespace AuthenticationService.Services
             return (true, response, null);
         }
 
-        private async Task<(bool Success, LoginResponse? Response, string? Error)> AuthenticateWithExternalApiAsync(LoginRequest request)
+        private async Task<(bool Success, LoginResponse? Response, string? Error)> AuthenticateWithExternalApiAsync(LoginRequest request, Tenant? tenant)
         {
             var httpClient = _httpClientFactory.CreateClient();
             var apiUrl = _configuration["AuthenticationSettings:ExternalAuthApiUrl"];
             
-            var response = await httpClient.PostAsJsonAsync($"{apiUrl}/login", request);
+            // Include tenant information in the external API call
+            var externalRequest = new 
+            {
+                request.Email,
+                request.Password,
+                TenantId = tenant?.TenantId
+            };
+            
+            var response = await httpClient.PostAsJsonAsync($"{apiUrl}/login", externalRequest);
             
             if (!response.IsSuccessStatusCode)
             {
+                _logger.LogWarning("External authentication failed for email: {Email} in tenant: {TenantId}", 
+                    request.Email, tenant?.TenantId);
                 return (false, null, "Authentication failed with external service");
             }
 
@@ -162,6 +179,8 @@ namespace AuthenticationService.Services
 
             _refreshTokens.Remove(refreshToken);
 
+            // Per ora, nel refresh token non manteniamo il tenant context
+            // In una implementazione più avanzata, dovresti memorizzare anche il tenant nel refresh token
             var tokens = GenerateTokens(user);
             
             var response = new LoginResponse
@@ -257,7 +276,7 @@ namespace AuthenticationService.Services
             return (true, userInfo, null);
         }
 
-        private AuthToken GenerateTokens(User user)
+        private AuthToken GenerateTokens(User user, Tenant? tenant = null)
         {
             var accessTokenExpiration = DateTime.UtcNow.AddMinutes(_jwtOptions.AccessTokenExpiration);
             var refreshTokenExpiration = DateTime.UtcNow.AddMinutes(_jwtOptions.RefreshTokenExpiration);
@@ -275,6 +294,18 @@ namespace AuthenticationService.Services
             
             if (!string.IsNullOrEmpty(user.FullName))
                 claims[JwtConstants.ClaimTypes.FullName] = user.FullName;
+
+            // Aggiungi informazioni tenant ai claims
+            if (tenant != null)
+            {
+                claims["tenant_id"] = tenant.TenantId.ToString();
+                claims["tenant_name"] = tenant.Name ?? string.Empty;
+                claims["tenant_identifier"] = tenant.Identifier ?? string.Empty;
+                claims["tenant_schema"] = tenant.SchemaName;
+                
+                _logger.LogDebug("Generated token for user {Username} with tenant {TenantId}", 
+                    user.Username, tenant.TenantId);
+            }
 
             var accessToken = _jwtTokenGenerator.GenerateAccessToken(claims);
             var refreshToken = _jwtTokenGenerator.GenerateRefreshToken();

@@ -120,7 +120,7 @@ namespace IssueService.Migrations
                     b.ToTable("IssueAttachments", (string)null);
                 });
 
-            modelBuilder.Entity("IssueService.Data.Entities.IssueWorkPlans", b =>
+            modelBuilder.Entity("IssueService.Data.Entities.IssueWorkSheet", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -173,7 +173,7 @@ namespace IssueService.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("IssueService.Data.Entities.IssueWorkPlans", b =>
+            modelBuilder.Entity("IssueService.Data.Entities.IssueWorkSheet", b =>
                 {
                     b.HasOne("IssueService.Data.Entities.Issue", null)
                         .WithMany()

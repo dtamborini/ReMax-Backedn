@@ -1,0 +1,76 @@
+@TenantService_HostAddress = http://localhost:5016
+@AuthService_HostAddress = http://localhost:5001
+
+### Health check
+GET {{TenantService_HostAddress}}/health
+Accept: application/json
+
+###
+
+### Get authentication token
+POST {{AuthService_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@condominium.com",
+  "password": "Admin123!"
+}
+
+###
+
+### Get all tenants
+GET {{TenantService_HostAddress}}/api/tenantmanagement
+Accept: application/json
+Authorization: Bearer [INSERT_TOKEN_HERE]
+
+###
+
+### Get tenant by ID
+GET {{TenantService_HostAddress}}/api/tenantmanagement/tenant_001
+Accept: application/json
+Authorization: Bearer [INSERT_TOKEN_HERE]
+
+###
+
+### Create new tenant
+POST {{TenantService_HostAddress}}/api/tenantmanagement
+Content-Type: application/json
+Authorization: Bearer [INSERT_TOKEN_HERE]
+
+{
+  "identifier": "condominio-test",
+  "name": "Condominio Test",
+  "adminEmail": "admin@condominio-test.com",
+  "address": "Via Test 123, Milano",
+  "domains": ["condominio-test.remax.com", "test.remax.com"]
+}
+
+###
+
+### Update tenant
+PUT {{TenantService_HostAddress}}/api/tenantmanagement/tenant_001
+Content-Type: application/json
+Authorization: Bearer [INSERT_TOKEN_HERE]
+
+{
+  "name": "Condominio Test Aggiornato",
+  "adminEmail": "newadmin@condominio-test.com",
+  "address": "Via Test 456, Milano",
+  "isActive": true,
+  "domains": ["condominio-test.remax.com"]
+}
+
+###
+
+### Get tenant by domain
+GET {{TenantService_HostAddress}}/api/tenantmanagement/by-domain/condominio-test.remax.com
+Accept: application/json
+Authorization: Bearer [INSERT_TOKEN_HERE]
+
+###
+
+### Delete tenant
+DELETE {{TenantService_HostAddress}}/api/tenantmanagement/tenant_001
+Authorization: Bearer [INSERT_TOKEN_HERE]
+
+###

@@ -59,6 +59,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "srcCheckListService", "srcC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckListService", "srcCheckListService\CheckListService\CheckListService.csproj", "{F4C8050B-9EE5-4768-9FD8-08E055267CE4}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "srcTenantService", "srcTenantService", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TenantService", "srcTenantService\TenantService\TenantService.csproj", "{00000000-0000-0000-0000-000000000000}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -227,6 +231,8 @@ Global
 		{F4C8050B-9EE5-4768-9FD8-08E055267CE4}.Release|x86.Build.0 = Release|Any CPU
 		{CB1A6B46-C2AB-ED85-D7A7-43F6DC201024}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CB1A6B46-C2AB-ED85-D7A7-43F6DC201024}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00000000-0000-0000-0000-000000000000}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00000000-0000-0000-0000-000000000000}.Debug|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -245,5 +251,6 @@ Global
 		{37422F21-33E2-4B01-9B4E-A061CE48FDF1} = {EC131D37-AC89-5F42-D207-8D35EC22DF8D}
 		{63DB3107-F3F4-491D-8E4C-D6E5B974190B} = {98EB13D2-31E2-A20D-3593-DAD1B26EEE3B}
 		{F4C8050B-9EE5-4768-9FD8-08E055267CE4} = {0EEAE82A-28A4-844D-AEB6-CD08FCF1E915}
+		{B2C3D4E5-F6G7-8901-BCDE-F23456789012} = {A1B2C3D4-E5F6-7890-ABCD-EF1234567890}
 	EndGlobalSection
 EndGlobal

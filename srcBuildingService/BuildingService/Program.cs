@@ -11,12 +11,18 @@ builder.Services.AddOpenApi();
 // Usa la configurazione JWT shared
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
-// Configura database PostgreSQL con schema buildings
-builder.Services.AddPostgreSqlDatabase<BuildingDbContext>(builder.Configuration);
+// Configurazione multi-tenancy 
+builder.Services.AddRemaxMultiTenancy(builder.Configuration);
+
+// Configura database PostgreSQL multi-tenant
+builder.Services.AddMultiTenantDatabase<BuildingDbContext>(builder.Configuration);
 
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+// Non applichiamo migrazioni automatiche - gestite dal TenantService
+// app.ApplyMigrations<BuildingDbContext>();
 
 if (app.Environment.IsDevelopment())
 {
@@ -25,6 +31,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
+
+// Multi-tenant middleware DEVE essere dopo Authentication
+app.UseMultiTenant();
+
 app.UseAuthorization();
 
 app.MapControllers();

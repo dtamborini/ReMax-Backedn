@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Finbuckle.MultiTenant;
 using RemaxManagement.Shared.Data.Context;
 using WorkSheetService.Data.Entities;
 
@@ -15,6 +16,17 @@ public class WorkSheetDbContext : BaseDbContext
     
     public WorkSheetDbContext(DbContextOptions<WorkSheetDbContext> options, IHttpContextAccessor httpContextAccessor) 
         : base(options)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    }
+    
+    public WorkSheetDbContext(DbContextOptions<WorkSheetDbContext> options, ITenantInfo tenantInfo) 
+        : base(options, tenantInfo)
+    {
+    }
+    
+    public WorkSheetDbContext(DbContextOptions<WorkSheetDbContext> options, IHttpContextAccessor httpContextAccessor, ITenantInfo tenantInfo) 
+        : base(options, tenantInfo)
     {
         _httpContextAccessor = httpContextAccessor;
     }

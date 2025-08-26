@@ -1,6 +1,7 @@
 using MaintenanceService.Data.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Finbuckle.MultiTenant;
 using RemaxManagement.Shared.Data.Context;
 
 namespace MaintenanceService.Data.Context;
@@ -15,6 +16,17 @@ public class MaintenanceDbContext : BaseDbContext
     
     public MaintenanceDbContext(DbContextOptions<MaintenanceDbContext> options, IHttpContextAccessor httpContextAccessor) 
         : base(options)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    }
+    
+    public MaintenanceDbContext(DbContextOptions<MaintenanceDbContext> options, ITenantInfo tenantInfo) 
+        : base(options, tenantInfo)
+    {
+    }
+    
+    public MaintenanceDbContext(DbContextOptions<MaintenanceDbContext> options, IHttpContextAccessor httpContextAccessor, ITenantInfo tenantInfo) 
+        : base(options, tenantInfo)
     {
         _httpContextAccessor = httpContextAccessor;
     }

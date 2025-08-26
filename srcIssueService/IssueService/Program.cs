@@ -1,61 +1,28 @@
 using IssueService.Data.Context;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using RemaxManagement.Shared.Extensions;
-using System.Text;
+using RemaxManagement.Shared.Data.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add HttpContextAccessor for audit functionality
-builder.Services.AddHttpContextAccessor();
+// Usa la configurazione JWT shared
+builder.Services.AddJwtAuthentication(builder.Configuration);
 
-// Add database context
-builder.Services.AddDbContext<IssueDbContext>((serviceProvider, options) =>
-{
-    var httpContextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    
-    options.UseNpgsql(connectionString);
-    
-    if (builder.Environment.IsDevelopment())
-    {
-        options.EnableSensitiveDataLogging();
-    }
-});
+// Configurazione multi-tenancy 
+builder.Services.AddRemaxMultiTenancy(builder.Configuration);
 
-// Add JWT authentication
-var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not found");
-var key = Encoding.ASCII.GetBytes(jwtKey);
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.RequireHttpsMetadata = false;
-    options.SaveToken = true;
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
-        ValidateIssuer = false,
-        ValidateAudience = false,
-        ValidateLifetime = true,
-        ClockSkew = TimeSpan.Zero
-    };
-});
+// Configura database PostgreSQL multi-tenant
+builder.Services.AddMultiTenantDatabase<IssueDbContext>(builder.Configuration);
 
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+// Non applichiamo migrazioni automatiche - gestite dal TenantService
+// app.ApplyMigrations<IssueDbContext>();
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
@@ -66,6 +33,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
+
+// Multi-tenant middleware DEVE essere dopo Authentication
+app.UseMultiTenant();
+
 app.UseAuthorization();
 app.MapControllers();
 
