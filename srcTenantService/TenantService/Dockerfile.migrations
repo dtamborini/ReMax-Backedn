@@ -44,17 +44,19 @@ RUN dotnet publish "TenantService.csproj" -c $BUILD_CONFIGURATION -o /app/publis
 
 # Stage finale - include SDK per dotnet ef
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS final
-WORKDIR /app
 
 # Installa EF Core tools globalmente
 RUN dotnet tool install --global dotnet-ef
 ENV PATH="$PATH:/root/.dotnet/tools"
 
-# Copia l'applicazione pubblicata
-COPY --from=publish /app/publish .
-
 # Copia tutti i progetti per le migrazioni (necessario per dotnet ef)
 COPY --from=build /src /src
-WORKDIR /src
 
-ENTRYPOINT ["dotnet", "/app/TenantService.dll"]
+# Copia l'applicazione pubblicata
+WORKDIR /app
+COPY --from=publish /app/publish .
+
+# Imposta il working directory per l'applicazione
+WORKDIR /app
+
+ENTRYPOINT ["dotnet", "TenantService.dll"]
