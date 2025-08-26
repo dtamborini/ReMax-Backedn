@@ -1,0 +1,57 @@
+# Dockerfile semplificato per TenantService con capacità di gestire migrazioni
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+ARG BUILD_CONFIGURATION=Release
+WORKDIR /src
+
+# Copia solo i file necessari per il restore
+COPY ["srcShared/RemaxManagement.Shared/RemaxManagement.Shared.csproj", "srcShared/RemaxManagement.Shared/"]
+COPY ["srcTenantService/TenantService/TenantService.csproj", "srcTenantService/TenantService/"]
+
+# Restore delle dipendenze
+RUN dotnet restore "srcTenantService/TenantService/TenantService.csproj"
+
+# Copia tutto il codice necessario
+COPY ["srcShared/", "srcShared/"]
+COPY ["srcTenantService/", "srcTenantService/"]
+
+# Build del TenantService
+WORKDIR "/src/srcTenantService/TenantService"
+RUN dotnet build "TenantService.csproj" -c $BUILD_CONFIGURATION -o /app/build --no-restore
+
+# Publish
+RUN dotnet publish "TenantService.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false --no-restore
+
+# Stage finale - con SDK per dotnet ef
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS final
+WORKDIR /app
+
+# Installa EF Core tools
+RUN dotnet tool install --global dotnet-ef
+ENV PATH="$PATH:/root/.dotnet/tools"
+
+# Copia l'app pubblicata
+COPY --from=build /app/publish .
+
+# Per le migrazioni, abbiamo bisogno dei progetti originali
+# Copia solo quello che serve per le migrazioni
+COPY --from=build /src/srcShared /src/srcShared
+COPY --from=build /src/srcTenantService /src/srcTenantService
+
+# Copia anche gli altri servizi per le migrazioni
+COPY ["srcAttachmentService/", "/src/srcAttachmentService/"]
+COPY ["srcBuildingService/", "/src/srcBuildingService/"]
+COPY ["srcCheckListService/", "/src/srcCheckListService/"]
+COPY ["srcCommunicationService/", "/src/srcCommunicationService/"]
+COPY ["srcInsuranceService/", "/src/srcInsuranceService/"]
+COPY ["srcIssueService/", "/src/srcIssueService/"]
+COPY ["srcMaintenanceService/", "/src/srcMaintenanceService/"]
+COPY ["srcRfqService/", "/src/srcRfqService/"]
+COPY ["srcSupplierService/", "/src/srcSupplierService/"]
+COPY ["srcUsersService/", "/src/srcUsersService/"]
+COPY ["srcWorkOrderService/", "/src/srcWorkOrderService/"]
+COPY ["srcWorkSheetService/", "/src/srcWorkSheetService/"]
+
+EXPOSE 8080
+EXPOSE 8081
+
+ENTRYPOINT ["dotnet", "TenantService.dll"]

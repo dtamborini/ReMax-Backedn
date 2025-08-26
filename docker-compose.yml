@@ -248,7 +248,7 @@
   tenant-service:
     build:
       context: .
-      dockerfile: srcTenantService/TenantService/Dockerfile.migrations
+      dockerfile: srcTenantService/TenantService/Dockerfile.migrations-simple
     ports:
       - "5016:8080"
     environment:

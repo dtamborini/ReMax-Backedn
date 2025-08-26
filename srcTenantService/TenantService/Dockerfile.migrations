@@ -40,6 +40,7 @@ RUN dotnet build "TenantService.csproj" -c $BUILD_CONFIGURATION -o /app/build --
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
+WORKDIR "/src/srcTenantService/TenantService"
 RUN dotnet publish "TenantService.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false --no-restore
 
 # Stage finale - include SDK per dotnet ef
