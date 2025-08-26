@@ -197,10 +197,16 @@ public class TenantSchemaService : ITenantSchemaService
             }
 
             // Prepare the dotnet ef command
+            // In Docker, potrebbe essere necessario usare il path completo di dotnet-ef
+            var efToolPath = Environment.GetEnvironmentVariable("DOTNET_EF_PATH") ?? "dotnet";
+            var efCommand = efToolPath == "dotnet" ? "ef" : "";
+            
             var startInfo = new ProcessStartInfo
             {
-                FileName = "dotnet",
-                Arguments = $"ef database update --connection \"{tenantConnectionString}\"",
+                FileName = efToolPath,
+                Arguments = efToolPath == "dotnet" 
+                    ? $"ef database update --connection \"{tenantConnectionString}\""
+                    : $"database update --connection \"{tenantConnectionString}\"",
                 WorkingDirectory = servicePath,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
@@ -208,8 +214,32 @@ public class TenantSchemaService : ITenantSchemaService
                 CreateNoWindow = true
             };
 
-            _logger.LogInformation("Executing: dotnet ef database update for {ServiceName} in {WorkingDirectory}", 
-                serviceName, servicePath);
+            _logger.LogInformation("Executing: {Command} {Arguments} for {ServiceName} in {WorkingDirectory}", 
+                startInfo.FileName, startInfo.Arguments, serviceName, servicePath);
+
+            // Debug: verifica che dotnet-ef sia disponibile
+            try
+            {
+                var versionCheck = new ProcessStartInfo
+                {
+                    FileName = "dotnet",
+                    Arguments = "ef --version",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false
+                };
+                
+                using var versionProcess = Process.Start(versionCheck);
+                if (versionProcess != null)
+                {
+                    var versionOutput = await versionProcess.StandardOutput.ReadToEndAsync();
+                    await versionProcess.WaitForExitAsync();
+                    _logger.LogInformation("EF Tools version check: {Version}", versionOutput.Trim());
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Could not check EF tools version");
+            }
 
             using var process = Process.Start(startInfo);
             if (process == null)

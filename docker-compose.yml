@@ -258,6 +258,7 @@
       # Variabili per controllo migrazioni (Production)
       - FORCE_LOCAL_PROJECT_PATH=false          # Usa Docker paths
       - SKIP_TENANT_MIGRATIONS=false            # Abilita le migrazioni
+      - DOTNET_EF_PATH=dotnet                    # Usa dotnet ef command
     volumes:
       # Monta i progetti necessari per le migrazioni
       - ./srcAttachmentService:/src/srcAttachmentService:ro
