@@ -6,7 +6,7 @@ using AuthenticationService.Interfaces;
 namespace AuthenticationService.Controllers
 {
     [ApiController]
-    [Route("api/auth/super-admin")]
+    [Route("api/Auth/super-admin")]
     public class SuperAdminAuthController : ControllerBase
     {
         private readonly ISuperAdminAuthService _superAdminAuthService;
