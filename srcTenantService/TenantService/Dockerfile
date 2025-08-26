@@ -16,7 +16,16 @@ FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "./TenantService.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-FROM base AS final
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS final
 WORKDIR /app
+
+# Installa EF tools per le migrazioni
+RUN dotnet tool install --global dotnet-ef
+ENV PATH="$PATH:/root/.dotnet/tools"
+
 COPY --from=publish /app/publish .
+
+EXPOSE 8080
+EXPOSE 8081
+
 ENTRYPOINT ["dotnet", "TenantService.dll"]

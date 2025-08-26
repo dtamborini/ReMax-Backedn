@@ -248,7 +248,7 @@
   tenant-service:
     build:
       context: .
-      dockerfile: srcTenantService/TenantService/Dockerfile.multistage
+      dockerfile: srcTenantService/TenantService/Dockerfile
     ports:
       - "5016:8080"
     environment:
