@@ -248,7 +248,7 @@
   tenant-service:
     build:
       context: .
-      dockerfile: srcTenantService/TenantService/Dockerfile.migrations-simple
+      dockerfile: srcTenantService/TenantService/Dockerfile.multistage
     ports:
       - "5016:8080"
     environment:
@@ -258,6 +258,21 @@
       # Variabili per controllo migrazioni (Production)
       - FORCE_LOCAL_PROJECT_PATH=false          # Usa Docker paths
       - SKIP_TENANT_MIGRATIONS=false            # Abilita le migrazioni
+    volumes:
+      # Monta i progetti necessari per le migrazioni
+      - ./srcAttachmentService:/src/srcAttachmentService:ro
+      - ./srcBuildingService:/src/srcBuildingService:ro
+      - ./srcCheckListService:/src/srcCheckListService:ro
+      - ./srcCommunicationService:/src/srcCommunicationService:ro
+      - ./srcInsuranceService:/src/srcInsuranceService:ro
+      - ./srcIssueService:/src/srcIssueService:ro
+      - ./srcMaintenanceService:/src/srcMaintenanceService:ro
+      - ./srcRfqService:/src/srcRfqService:ro
+      - ./srcSupplierService:/src/srcSupplierService:ro
+      - ./srcUsersService:/src/srcUsersService:ro
+      - ./srcWorkOrderService:/src/srcWorkOrderService:ro
+      - ./srcWorkSheetService:/src/srcWorkSheetService:ro
+      - ./srcShared:/src/srcShared:ro
     networks:
       - remax-network
     depends_on:
