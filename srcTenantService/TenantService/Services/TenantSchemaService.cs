@@ -176,6 +176,14 @@ public class TenantSchemaService : ITenantSchemaService
 
     private async Task ApplyMigrationsForService(string serviceName, string tenantConnectionString)
     {
+        // Controlla se dobbiamo saltare le migrazioni (per sviluppo locale rapido)
+        var skipMigrations = Environment.GetEnvironmentVariable("SKIP_TENANT_MIGRATIONS");
+        if (!string.IsNullOrEmpty(skipMigrations) && bool.TryParse(skipMigrations, out var skip) && skip)
+        {
+            _logger.LogWarning("Skipping migrations for {ServiceName} due to SKIP_TENANT_MIGRATIONS=true", serviceName);
+            return;
+        }
+
         _logger.LogInformation("Applying migrations for {ServiceName} using dotnet ef database update", serviceName);
 
         try
@@ -260,7 +268,39 @@ public class TenantSchemaService : ITenantSchemaService
     
     private string GetServiceProjectPath(string serviceName)
     {
-        // Construct the path to the service project
+        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+        var forceLocalPath = Environment.GetEnvironmentVariable("FORCE_LOCAL_PROJECT_PATH");
+        
+        // Se in Development o forzato, usa approccio locale
+        if (environment.Equals("Development", StringComparison.OrdinalIgnoreCase) || 
+            !string.IsNullOrEmpty(forceLocalPath) && bool.TryParse(forceLocalPath, out var force) && force)
+        {
+            return GetLocalProjectPath(serviceName);
+        }
+
+        // Altrimenti prova approccio Docker prima
+        return GetDockerProjectPath(serviceName) ?? GetLocalProjectPath(serviceName);
+    }
+
+    private string? GetDockerProjectPath(string serviceName)
+    {
+        // In produzione (Docker), i progetti sono copiati in /src
+        var dockerSourcePath = "/src";
+        if (Directory.Exists(dockerSourcePath))
+        {
+            var servicePath = Path.Combine(dockerSourcePath, $"src{serviceName}", serviceName);
+            if (Directory.Exists(servicePath))
+            {
+                _logger.LogDebug("Using Docker source path for {ServiceName}: {Path}", serviceName, servicePath);
+                return servicePath;
+            }
+        }
+        return null;
+    }
+
+    private string GetLocalProjectPath(string serviceName)
+    {
+        // Fallback per sviluppo locale
         var currentDirectory = Directory.GetCurrentDirectory();
         
         // Navigate up to find the solution root
@@ -272,10 +312,18 @@ public class TenantSchemaService : ITenantSchemaService
 
         if (directory == null)
         {
-            throw new DirectoryNotFoundException("Could not find solution root directory");
+            throw new DirectoryNotFoundException($"Could not find solution root directory. Current: {currentDirectory}");
         }
 
-        return Path.Combine(directory.FullName, $"src{serviceName}", serviceName);
+        var localPath = Path.Combine(directory.FullName, $"src{serviceName}", serviceName);
+        _logger.LogDebug("Using local development path for {ServiceName}: {Path}", serviceName, localPath);
+        
+        if (!Directory.Exists(localPath))
+        {
+            throw new DirectoryNotFoundException($"Local project path not found: {localPath}");
+        }
+        
+        return localPath;
     }
     
 }
