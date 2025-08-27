@@ -15,9 +15,35 @@ RUN dotnet restore "srcShared/RemaxManagement.Shared/RemaxManagement.Shared.cspr
 COPY ["srcTenantService/TenantService/TenantService.csproj", "srcTenantService/TenantService/"]
 RUN dotnet restore "srcTenantService/TenantService/TenantService.csproj"
 
-# Copy everything else
+# Copy ALL microservice projects for migrations
+COPY ["srcAttachmentService/AttachmentService/AttachmentService.csproj", "srcAttachmentService/AttachmentService/"]
+COPY ["srcBuildingService/BuildingService/BuildingService.csproj", "srcBuildingService/BuildingService/"]
+COPY ["srcCheckListService/CheckListService/CheckListService.csproj", "srcCheckListService/CheckListService/"]
+COPY ["srcCommunicationService/CommunicationService/CommunicationService.csproj", "srcCommunicationService/CommunicationService/"]
+COPY ["srcInsuranceService/InsuranceService/InsuranceService.csproj", "srcInsuranceService/InsuranceService/"]
+COPY ["srcIssueService/IssueService/IssueService.csproj", "srcIssueService/IssueService/"]
+COPY ["srcMaintenanceService/MaintenanceService/MaintenanceService.csproj", "srcMaintenanceService/MaintenanceService/"]
+COPY ["srcRfqService/RfqService/RfqService.csproj", "srcRfqService/RfqService/"]
+COPY ["srcSupplierService/SupplierService/SupplierService.csproj", "srcSupplierService/SupplierService/"]
+COPY ["srcUsersService/UsersService/UsersService.csproj", "srcUsersService/UsersService/"]
+COPY ["srcWorkOrderService/WorkOrderService/WorkOrderService.csproj", "srcWorkOrderService/WorkOrderService/"]
+COPY ["srcWorkSheetService/WorkSheetService/WorkSheetService.csproj", "srcWorkSheetService/WorkSheetService/"]
+
+# Copy everything else including all microservice sources
 COPY ["srcShared/RemaxManagement.Shared/", "srcShared/RemaxManagement.Shared/"]
 COPY ["srcTenantService/TenantService/", "srcTenantService/TenantService/"]
+COPY ["srcAttachmentService/AttachmentService/", "srcAttachmentService/AttachmentService/"]
+COPY ["srcBuildingService/BuildingService/", "srcBuildingService/BuildingService/"]
+COPY ["srcCheckListService/CheckListService/", "srcCheckListService/CheckListService/"]
+COPY ["srcCommunicationService/CommunicationService/", "srcCommunicationService/CommunicationService/"]
+COPY ["srcInsuranceService/InsuranceService/", "srcInsuranceService/InsuranceService/"]
+COPY ["srcIssueService/IssueService/", "srcIssueService/IssueService/"]
+COPY ["srcMaintenanceService/MaintenanceService/", "srcMaintenanceService/MaintenanceService/"]
+COPY ["srcRfqService/RfqService/", "srcRfqService/RfqService/"]
+COPY ["srcSupplierService/SupplierService/", "srcSupplierService/SupplierService/"]
+COPY ["srcUsersService/UsersService/", "srcUsersService/UsersService/"]
+COPY ["srcWorkOrderService/WorkOrderService/", "srcWorkOrderService/WorkOrderService/"]
+COPY ["srcWorkSheetService/WorkSheetService/", "srcWorkSheetService/WorkSheetService/"]
 
 WORKDIR "/src/srcTenantService/TenantService"
 RUN dotnet build "TenantService.csproj" -c $BUILD_CONFIGURATION -o /app/build
@@ -26,7 +52,18 @@ FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "TenantService.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-FROM base AS final
+# Stage finale con SDK per avere dotnet-ef disponibile
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS final
 WORKDIR /app
+
+# Installa Entity Framework Core tools
+RUN dotnet tool install --global dotnet-ef
+ENV PATH="$PATH:/root/.dotnet/tools"
+
+# Copia l'applicazione pubblicata
 COPY --from=publish /app/publish .
+
+# Copia TUTTI i progetti sorgenti necessari per le migrazioni
+COPY --from=build /src /src
+
 ENTRYPOINT ["dotnet", "TenantService.dll"]
