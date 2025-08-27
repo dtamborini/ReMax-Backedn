@@ -1,4 +1,4 @@
-﻿FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
@@ -26,19 +26,7 @@ FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "TenantService.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS final
+FROM base AS final
 WORKDIR /app
-
-# Installa EF Core tools per le migrazioni
-RUN dotnet tool install --global dotnet-ef --version 9.0.8
-ENV PATH="$PATH:/root/.dotnet/tools"
-# Verifica che dotnet-ef sia installato
-RUN dotnet ef --version
-
-# Copia l'app pubblicata
 COPY --from=publish /app/publish .
-
-EXPOSE 8080
-EXPOSE 8081
-
 ENTRYPOINT ["dotnet", "TenantService.dll"]

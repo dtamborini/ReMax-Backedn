@@ -17,4 +17,3 @@ services:
     volumes:
       # Monta la directory della solution per sviluppo
       - .:/src:ro
-    working_dir: /src/srcTenantService/TenantService

@@ -248,32 +248,13 @@
   tenant-service:
     build:
       context: .
-      dockerfile: srcTenantService/TenantService/Dockerfile
+      dockerfile: srcTenantService/TenantService/Dockerfile.multistage
     ports:
       - "5016:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=remax_management;Username=remax_user;Password=remax_password123;Port=5432
-      # Variabili per controllo migrazioni (Production)
-      - FORCE_LOCAL_PROJECT_PATH=false          # Usa Docker paths
-      - SKIP_TENANT_MIGRATIONS=false            # Abilita le migrazioni
-      - DOTNET_EF_PATH=dotnet                    # Usa dotnet ef command
-    volumes:
-      # Monta i progetti necessari per le migrazioni
-      - ./srcAttachmentService:/src/srcAttachmentService:ro
-      - ./srcBuildingService:/src/srcBuildingService:ro
-      - ./srcCheckListService:/src/srcCheckListService:ro
-      - ./srcCommunicationService:/src/srcCommunicationService:ro
-      - ./srcInsuranceService:/src/srcInsuranceService:ro
-      - ./srcIssueService:/src/srcIssueService:ro
-      - ./srcMaintenanceService:/src/srcMaintenanceService:ro
-      - ./srcRfqService:/src/srcRfqService:ro
-      - ./srcSupplierService:/src/srcSupplierService:ro
-      - ./srcUsersService:/src/srcUsersService:ro
-      - ./srcWorkOrderService:/src/srcWorkOrderService:ro
-      - ./srcWorkSheetService:/src/srcWorkSheetService:ro
-      - ./srcShared:/src/srcShared:ro
     networks:
       - remax-network
     depends_on:
