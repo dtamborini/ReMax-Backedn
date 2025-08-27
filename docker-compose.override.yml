@@ -8,12 +8,13 @@ services:
       context: .
       dockerfile: srcTenantService/TenantService/Dockerfile.multistage
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production        # Usa Production per i path Docker
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=remax_management;Username=remax_user;Password=remax_password123;Port=5432
-      # Variabili per controllare il comportamento delle migrazioni
-      - FORCE_LOCAL_PROJECT_PATH=true           # Forza l'uso dei path locali anche in Docker
-      - SKIP_TENANT_MIGRATIONS=false            # Abilita le migrazioni (default)
-    volumes:
-      # Monta la directory della solution per sviluppo
-      - .:/src:ro
+      # Disabilita force local path per usare i path Docker
+      # - FORCE_LOCAL_PROJECT_PATH=true           
+      - SKIP_TENANT_MIGRATIONS=false            # Abilita le migrazioni
+    # Rimuoviamo i volumi per usare i sorgenti nel container
+    # volumes:
+    #   # Monta la directory della solution per sviluppo
+    #   - .:/src:ro

@@ -301,30 +301,61 @@ public class TenantSchemaService : ITenantSchemaService
         var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
         var forceLocalPath = Environment.GetEnvironmentVariable("FORCE_LOCAL_PROJECT_PATH");
         
-        // Se in Development o forzato, usa approccio locale
-        if (environment.Equals("Development", StringComparison.OrdinalIgnoreCase) || 
-            !string.IsNullOrEmpty(forceLocalPath) && bool.TryParse(forceLocalPath, out var force) && force)
+        _logger.LogInformation("Getting service project path for {ServiceName}. Environment: {Environment}, ForceLocalPath: {ForceLocalPath}", 
+            serviceName, environment, forceLocalPath ?? "not set");
+        
+        // In container Docker, usa sempre il path Docker
+        var dockerPath = GetDockerProjectPath(serviceName);
+        if (!string.IsNullOrEmpty(dockerPath))
         {
-            return GetLocalProjectPath(serviceName);
+            _logger.LogInformation("Using Docker path for {ServiceName}: {Path}", serviceName, dockerPath);
+            return dockerPath;
         }
-
-        // Altrimenti prova approccio Docker prima
-        return GetDockerProjectPath(serviceName) ?? GetLocalProjectPath(serviceName);
+        
+        _logger.LogWarning("Docker path not found for {ServiceName}, falling back to local path", serviceName);
+        return GetLocalProjectPath(serviceName);
     }
 
     private string? GetDockerProjectPath(string serviceName)
     {
         // In produzione (Docker), i progetti sono copiati in /src
         var dockerSourcePath = "/src";
+        
+        _logger.LogInformation("Checking Docker source path: {DockerSourcePath}", dockerSourcePath);
+        
         if (Directory.Exists(dockerSourcePath))
         {
             var servicePath = Path.Combine(dockerSourcePath, $"src{serviceName}", serviceName);
+            _logger.LogInformation("Checking service path: {ServicePath}", servicePath);
+            
             if (Directory.Exists(servicePath))
             {
-                _logger.LogDebug("Using Docker source path for {ServiceName}: {Path}", serviceName, servicePath);
+                _logger.LogInformation("Using Docker source path for {ServiceName}: {Path}", serviceName, servicePath);
                 return servicePath;
             }
+            else
+            {
+                _logger.LogWarning("Service path does not exist: {ServicePath}", servicePath);
+                
+                // Debug: elenca le directory disponibili
+                try
+                {
+                    var availableDirs = Directory.GetDirectories(dockerSourcePath)
+                        .Where(d => Path.GetFileName(d).StartsWith("src"))
+                        .ToList();
+                    _logger.LogInformation("Available source directories: {Directories}", string.Join(", ", availableDirs));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error listing source directories");
+                }
+            }
         }
+        else
+        {
+            _logger.LogWarning("Docker source path does not exist: {DockerSourcePath}", dockerSourcePath);
+        }
+        
         return null;
     }
 
