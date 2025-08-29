@@ -1,6 +1,35 @@
 @BuildingService_HostAddress = http://localhost:5079
+@bearer_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
 
-GET {{BuildingService_HostAddress}}/weatherforecast/
+### Health Check
+GET {{BuildingService_HostAddress}}/health
 Accept: application/json
+
+### Get all buildings
+GET {{BuildingService_HostAddress}}/api/buildings
+Accept: application/json
+Authorization: Bearer {{bearer_token}}
+Tenant: test
+
+### Get building detail with IBANs and PolicyAttachments - Condominio Bella Vista
+# Should return: 2 IBANs and 3 Policy attachments
+GET {{BuildingService_HostAddress}}/api/buildings/33a2c435-f24c-4605-9286-b3bd6389f3e7
+Accept: application/json
+Authorization: Bearer {{bearer_token}}
+Tenant: test
+
+### Get building detail - Residence Le Torri
+# Should return: 2 IBANs and 2 Policy attachments
+GET {{BuildingService_HostAddress}}/api/buildings/e1ef7731-7e1a-45d9-b8ae-88982b992012
+Accept: application/json
+Authorization: Bearer {{bearer_token}}
+Tenant: test
+
+### Get building detail - Palazzo Reale
+# Should return: 3 IBANs and 3 Policy attachments
+GET {{BuildingService_HostAddress}}/api/buildings/77112524-ca7a-4de2-9785-989369e5ea3f
+Accept: application/json
+Authorization: Bearer {{bearer_token}}
+Tenant: test
 
 ###

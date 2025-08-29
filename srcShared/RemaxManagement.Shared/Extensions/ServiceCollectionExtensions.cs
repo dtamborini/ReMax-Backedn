@@ -43,8 +43,18 @@ namespace RemaxManagement.Shared.Extensions
                 // Eventi per logging
                 options.Events = new JwtBearerEvents
                 {
+                    OnMessageReceived = context =>
+                    {
+                        var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+                        if (!string.IsNullOrEmpty(token))
+                        {
+                            Console.WriteLine($"[JWT] Token received: {token.Substring(0, Math.Min(20, token.Length))}...");
+                        }
+                        return Task.CompletedTask;
+                    },
                     OnAuthenticationFailed = context =>
                     {
+                        Console.WriteLine($"[JWT] Authentication failed: {context.Exception.Message}");
                         if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
                         {
                             context.Response.Headers["Token-Expired"] = "true";
@@ -53,7 +63,12 @@ namespace RemaxManagement.Shared.Extensions
                     },
                     OnTokenValidated = context =>
                     {
-                        // Qui puoi aggiungere logica custom dopo la validazione del token
+                        Console.WriteLine($"[JWT] Token validated successfully for user: {context.Principal?.Identity?.Name}");
+                        return Task.CompletedTask;
+                    },
+                    OnChallenge = context =>
+                    {
+                        Console.WriteLine($"[JWT] Challenge: {context.Error}, {context.ErrorDescription}");
                         return Task.CompletedTask;
                     }
                 };

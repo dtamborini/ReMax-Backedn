@@ -44,14 +44,17 @@
     ports:
       - "5002:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=remax_management;Username=remax_user;Password=remax_password123;Port=5432
+      - Services__AttachmentService__Url=http://attachment-service:8080
     networks:
       - remax-network
     depends_on:
       postgres-db:
         condition: service_healthy
+      attachment-service:
+        condition: service_started
 
   workquote-service:
     build:
@@ -60,7 +63,7 @@
     ports:
       - "5003:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=remax_management;Username=remax_user;Password=remax_password123;Port=5432
     networks:
@@ -76,7 +79,7 @@
     ports:
       - "5004:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=remax_management;Username=remax_user;Password=remax_password123;Port=5432
     networks:
@@ -92,7 +95,7 @@
     ports:
       - "5005:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=remax_management;Username=remax_user;Password=remax_password123;Port=5432
     networks:
@@ -108,7 +111,7 @@
     ports:
       - "5006:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=remax_management;Username=remax_user;Password=remax_password123;Port=5432
     networks:
@@ -124,7 +127,7 @@
     ports:
       - "5008:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=remax_management;Username=remax_user;Password=remax_password123;Port=5432
     networks:
@@ -140,7 +143,7 @@
     ports:
       - "5009:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=remax_management;Username=remax_user;Password=remax_password123;Port=5432
     networks:
@@ -156,7 +159,7 @@
     ports:
       - "5010:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=remax_management;Username=remax_user;Password=remax_password123;Port=5432
     networks:
@@ -172,7 +175,7 @@
     ports:
       - "5011:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=remax_management;Username=remax_user;Password=remax_password123;Port=5432
     networks:
@@ -188,7 +191,7 @@
     ports:
       - "5012:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=remax_management;Username=remax_user;Password=remax_password123;Port=5432
     networks:
@@ -204,7 +207,7 @@
     ports:
       - "5013:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=remax_management;Username=remax_user;Password=remax_password123;Port=5432
     networks:
@@ -220,7 +223,7 @@
     ports:
       - "5014:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=remax_management;Username=remax_user;Password=remax_password123;Port=5432
     networks:
@@ -236,7 +239,7 @@
     ports:
       - "5015:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=remax_management;Username=remax_user;Password=remax_password123;Port=5432
     networks:

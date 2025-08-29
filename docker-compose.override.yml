@@ -2,6 +2,15 @@
 # Usa: docker-compose -f docker-compose.yml -f docker-compose.override.yml up
 
 services:
+  building-service:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - Services__AttachmentService__Url=http://attachment-service:8080
+  
+  attachment-service:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+  
   tenant-service:
     # In sviluppo, usa il Dockerfile normale se preferisci
     build:

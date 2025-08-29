@@ -53,11 +53,6 @@ public abstract class BaseDbContext : DbContext
                 entry.Property(x => x.CreatedAt).IsModified = false;
                 entry.Property(x => x.CreatedBy).IsModified = false;
             }
-            else if (entry.State == EntityState.Deleted && entry.Entity is BaseEntity entity)
-            {
-                // Convert hard delete to soft delete
-                entry.State = EntityState.Modified;
-            }
         }
     }
     
@@ -74,20 +69,7 @@ public abstract class BaseDbContext : DbContext
         // Configura schema tenant se disponibile
         ConfigureTenantSchema(modelBuilder);
 
-        // Apply global query filter for soft delete
-        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-        {
-            if (typeof(BaseEntity).IsAssignableFrom(entityType.ClrType))
-            {
-                var parameter = Expression.Parameter(entityType.ClrType, "e");
-                var propertyMethodInfo = typeof(EF).GetMethod("Property")?.MakeGenericMethod(typeof(bool));
-                var isDeletedProperty = Expression.Call(propertyMethodInfo, parameter, Expression.Constant("IsDeleted"));
-                var compareExpression = Expression.MakeBinary(ExpressionType.Equal, isDeletedProperty, Expression.Constant(false));
-                var lambda = Expression.Lambda(compareExpression, parameter);
-
-                modelBuilder.Entity(entityType.ClrType).HasQueryFilter(lambda);
-            }
-        }
+        // No global query filters for now
     }
     
     private void ConfigureTenantSchema(ModelBuilder modelBuilder)

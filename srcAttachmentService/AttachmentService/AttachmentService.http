@@ -1,0 +1,54 @@
+@AttachmentService_HostAddress = http://localhost:5080
+@bearer_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+
+### Health Check
+GET {{AttachmentService_HostAddress}}/health
+Accept: application/json
+
+### Get single attachment by ID
+GET {{AttachmentService_HostAddress}}/api/attachments/e31853f8-f323-476c-8ca9-c0d81dab76a5
+Accept: application/json
+Authorization: Bearer {{bearer_token}}
+Tenant: test
+
+### Get multiple attachments by IDs (batch)
+POST {{AttachmentService_HostAddress}}/api/attachments/batch
+Content-Type: application/json
+Authorization: Bearer {{bearer_token}}
+Tenant: test
+
+{
+  "attachmentIds": [
+    "e31853f8-f323-476c-8ca9-c0d81dab76a5",
+    "9c715709-2982-4913-81d2-393e19ec572a",
+    "4d30f9b7-17f1-4b27-ade1-5ef7e348aaf5",
+    "00000000-0000-0000-0000-000000000000"
+  ]
+}
+
+### Get all attachments (paginated)
+GET {{AttachmentService_HostAddress}}/api/attachments?page=1&pageSize=5
+Accept: application/json
+Authorization: Bearer {{bearer_token}}
+Tenant: test
+
+### Test batch with all PolicyAttachments IDs from Building Service
+POST {{AttachmentService_HostAddress}}/api/attachments/batch
+Content-Type: application/json
+Authorization: Bearer {{bearer_token}}
+Tenant: test
+
+{
+  "attachmentIds": [
+    "a08eabb8-02e3-456e-a8d6-d8f2720e8646",
+    "983c12a5-c995-434b-95dc-c7eec826883c",
+    "fdc49556-a4c8-4ced-a0a6-0c6029c9a29a",
+    "e31853f8-f323-476c-8ca9-c0d81dab76a5",
+    "9c715709-2982-4913-81d2-393e19ec572a",
+    "4d30f9b7-17f1-4b27-ade1-5ef7e348aaf5",
+    "ed73e963-f05c-4e54-a8e8-b454899450b9",
+    "e0eb7a9f-ef26-4ad6-b8ee-eacd736f3acf"
+  ]
+}
+
+###
