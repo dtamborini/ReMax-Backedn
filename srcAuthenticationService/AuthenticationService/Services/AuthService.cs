@@ -254,7 +254,13 @@ namespace AuthenticationService.Services
                 Username = user.Username,
                 Role = user.Role,
                 Email = user.Email,
-                FullName = user.FullName
+                FullName = user.FullName,
+                Buildings = [
+                    new { Id = Guid.Parse("11111111-1111-1111-1111-111111111111"), Name = "Condominio Test Extended", Address = "Via Test 123, 20121 Milano MI" },
+                    new { Id = Guid.Parse("33a2c435-f24c-4605-9286-b3bd6389f3e7"), Name = "Condominio Bella Vista", Address = "Via Roma 123, 20121 Milano MI" },
+                    new { Id = Guid.Parse("77112524-ca7a-4de2-9785-989369e5ea3f"), Name = "Palazzo Reale", Address = "Piazza del Duomo 1, 20122 Milano MI" },
+                    new { Id = Guid.Parse("e1ef7731-7e1a-45d9-b8ae-88982b992012"), Name = "Residence Le Torri", Address = "Corso Venezia 45, 20121 Milano MI" }
+                ]
             };
 
             return (true, userInfo, null);

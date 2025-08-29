@@ -13,5 +13,7 @@ namespace AuthenticationService.DTOs
         public string Role { get; set; } = string.Empty;
         public string? Email { get; set; }
         public string? FullName { get; set; }
+
+        public IList<object> Buildings { get; set; } = new List<object>();
     }
 }
